@@ -1,6 +1,7 @@
-FROM python:slim-buster
+FROM python:3.8.6-slim-buster
 
-RUN pip install --no-cache-dir opencv-python numpy && \
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir opencv-python==4.4.0.46 numpy && \
     rm -rf /root/.cache/pip/* && \
     rm -rf /tmp/*
 

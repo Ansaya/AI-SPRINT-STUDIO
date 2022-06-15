@@ -1,6 +1,6 @@
 FROM python:3.8
 
-COPY requirements.txt requirements.txt
+COPY src/blurry-faces-onnx/requirements.txt requirements.txt
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
