@@ -58,9 +58,6 @@ def parse_dag(dag_file):
     dependencies_components = np.unique(list(dag_dict.keys()))
     dag_components = np.unique(list(dag['components']))
     
-    print(dependencies_components)
-    print(dag_components)
-    
     if not np.all(dependencies_components == dag_components):
         raise Exception("Components in 'dependencies' and 'components' in " + 
                         "the DAG YAML file do not match.")
