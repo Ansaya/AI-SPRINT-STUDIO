@@ -5,7 +5,6 @@ import ast
 import json
 import numpy as np
 
-# TODO: decorator.id is the name?
 AISPRINT_ANNOTATIONS = ['component_name', 'exec_time', 'expected_throughput', 
                         'partitionable_model', 'device_constraints', 'early_exits_model', 'annotation']
 

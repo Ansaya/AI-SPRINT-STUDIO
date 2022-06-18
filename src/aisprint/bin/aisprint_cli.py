@@ -2,7 +2,7 @@ import click
 import pkg_resources
 from cookiecutter.main import cookiecutter
 
-from ..create_designs import create_aisprint_designs
+from ..design import run_design 
 
 @click.group()
 def aisprint_cli():
@@ -20,17 +20,11 @@ def new_application(application_name):
 
 @click.command()
 @click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
-def create_designs(application_dir):
-    create_aisprint_designs(application_dir, application_dir)
+def design(application_dir):
+    run_design(application_dir)
     print("DONE. Application designs have been generated.") 
 
-@click.command()
-def run_design_tool():
-    # TODO
-    pass
-
-aisprint_cli.add_command(create_designs)
-aisprint_cli.add_command(run_design_tool)
+aisprint_cli.add_command(design)
 aisprint_cli.add_command(new_application)
 
 if __name__ == '__main__':

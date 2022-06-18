@@ -48,5 +48,5 @@ aisprint new-application --application_name NAME
 ## Example2: Parse annotations and create designs 
 ### example application in 'examples'
 ```
-aisprint create-designs --application_dir ./NAME
+aisprint design --application_dir ./NAME
 ```

@@ -14,10 +14,10 @@ class PartitionableModelManager(AnnotationManager):
         also check errors in the annotations' format.
     '''
 
-    def process_annotations(self):
+    def process_annotations(self, args):
         # TODO
         pass
 
-    def generate_configuration_file(self, filename):
+    def generate_configuration_files(self, deployment_name):
         # TODO
         pass

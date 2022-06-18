@@ -1,4 +1,6 @@
 import os
+import sys
+import subprocess
 import time
 
 import argparse
@@ -27,7 +29,7 @@ def main(args):
     input_name = ort_session.get_inputs()[0].name
 
     # load and preprocess image
-    orig_image = cv2.imread(args['image'])
+    orig_image = cv2.imread(args['input'])
     image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
     # image = cv2.resize(image, (320, 240))
     image = cv2.resize(image, (640, 480))
@@ -89,13 +91,28 @@ if __name__ == '__main__':
     
     # construct the argument parser and parse the arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--image", required=True, help="path to input image")
-    parser.add_argument("-o", "--output",help="path to output image")
-    parser.add_argument("-y", "--onnx_file", default="/opt/blurry-faces/onnx_model/version-RFB-640.onnx", help="complete path to tge ONNX model")
+    parser.add_argument("-i", "--input", required=True, help="path to input video")
+    parser.add_argument("-o", "--output", help="path to output directory")
+    parser.add_argument("-y", "--onnx_file", default="/opt/blurry-faces/onnx/version-RFB-640.onnx", help="complete path to tge ONNX model")
     parser.add_argument("-t", "--threshold", type=float, default=0.7, help="threshold when applying non-max suppression")
     parser.add_argument('--visualize_count', default=False, action='store_true', help="whether to visualize the count of the detected faces on the image")
     args = vars(parser.parse_args())
 
+    orig_input = args['input']
+    orig_output = args['output']
+
     args['classes'] = ['BACKGROUND', 'face']
 
-    main(args)
+    print("SCRIPT: Analyzing file '{}', saving the outputimages in '{}'".format(args['input'], args['output'])) 
+
+    # subprocess.run(['ffmpeg', '-i', '"$INPUT_FILE_PATH"', '-vf', 'fps=12/60', '"$OUTPUT_SUBFOLDER/img%d.jpg"'])
+    subprocess.run(['ffmpeg', '-i', '{}'.format(orig_input), '-vf', 'fps=12/60', '{}/img%d.jpg'.format(orig_output)])
+
+    frames = next(os.walk(os.path.join(orig_output)))[2]
+    frames = [frame for frame in frames if '.jpg' in frame]
+
+    for frame in frames:
+        args['input'] = os.path.join(orig_output, frame)
+        args['output'] = os.path.join(orig_output, frame)
+
+        main(args)

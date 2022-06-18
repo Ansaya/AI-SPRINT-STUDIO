@@ -15,7 +15,7 @@ def main(args):
 	net = cv2.dnn.readNetFromDarknet(args['configPath'], args['weightsPath'])
 
 	# load our input image and get it height and width
-	image = cv2.imread(args["image"])
+	image = cv2.imread(args["input"])
 	(H, W) = image.shape[:2]
 
 	# determine only the *output* layer names that we need from YOLO
@@ -130,8 +130,8 @@ if __name__ == '__main__':
 
 	# construct the argument parser and parse the arguments
 	ap = argparse.ArgumentParser()
-	ap.add_argument("-i", "--image", required=True, help="path to input image")
-	ap.add_argument("-o", "--output",help="path to output image")
+	ap.add_argument("-i", "--input", required=True, help="path to input image")
+	ap.add_argument("-o", "--output",help="path to output folder")
 	ap.add_argument("-y", "--yolo", default="/opt/mask-detector/cfg", help="base path to YOLO cfg directory")
 	ap.add_argument("-c", "--confidence", type=float, default=0.2, help="minimum probability to filter weak detections")
 	ap.add_argument("-t", "--threshold", type=float, default=0.1, help="threshold when applying non-max suppression")
@@ -151,5 +151,7 @@ if __name__ == '__main__':
 	configPath = os.path.sep.join([args["yolo"], "yolov3-tiny_obj_train.cfg"])
 	args['weightsPath'] = weightsPath
 	args['configPath'] = configPath
+	
+	args['output'] = os.path.join(args['output'], os.path.basename(args['input'])) 
 
 	main(args)
