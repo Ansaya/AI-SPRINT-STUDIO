@@ -19,7 +19,7 @@ def create_aisprint_designs(application_dir):
     # 1) Read DAG file
     # ----------------
     # DAG filename: 'application_dag.yaml' 
-    dag_file = os.path.join(application_dir, 'application_dag.yaml')
+    dag_file = os.path.join(application_dir, 'common_config', 'application_dag.yaml')
     with open(dag_file, 'r') as f:
         dag_dict = yaml.safe_load(f)
     # ----------------

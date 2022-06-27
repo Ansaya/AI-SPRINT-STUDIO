@@ -29,7 +29,7 @@ def run_design(application_dir):
     # 1) Read DAG file
     # ----------------
     # DAG filename: 'application_dag.yaml' 
-    dag_file = os.path.join(application_dir, 'application_dag.yaml')
+    dag_file = os.path.join(application_dir, 'common_config', 'application_dag.yaml')
     
     print("Parsing application DAG in '{}'..".format(dag_file))
     dag_dict, num_components = parse_dag(dag_file)
