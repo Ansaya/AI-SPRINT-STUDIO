@@ -2,8 +2,9 @@ import os
 import argparse 
 import yaml
 
+from aisprint.application_preprocessing import ApplicationPreprocessor
+
 from .utils import parse_dag
-from .designs_creation import create_aisprint_designs
 from .annotations_parsing import run_aisprint_parser
 from .deployments_creation import create_aisprint_deployments
 
@@ -54,9 +55,10 @@ def run_design(application_dir):
     run_aisprint_parser(application_dir=application_dir)
     # -------------------------------------------
 
-    # 3) Create AI-SPRINT components' designs 
-    # ---------------------------------------
-    create_aisprint_designs(application_dir=application_dir)
+    # 3) Create AI-SPRINT base design with the Application Pre-Processor 
+    # ------------------------------------------------------------------
+    application_preprocessor = ApplicationPreprocessor(application_dir=application_dir)
+    application_preprocessor.create_base_design()
     # ---------------------------------------
 
     # 4) Create AI-SPRINT deployments 
