@@ -30,8 +30,6 @@ class ApplicationPreprocessor():
         # For each component create a 'base' design
         for component_name in dag_dict['System']['components']:
             destination_dir = os.path.join(designs_dir, component_name, 'base')
-            if not os.path.exists(destination_dir):
-                os.makedirs(destination_dir)
             
             # Get original folder name of the 'component_name'
             component_folder = get_component_folder(self.application_dir, component_name)
@@ -45,7 +43,6 @@ class ApplicationPreprocessor():
         for component_name in dag_dict['System']['components']:
             component_partitions['components'][component_name] = {}
             component_partitions['components'][component_name]['partitions'] = [component_name]
-            print("DONE.")
         designs_dir = os.path.join(self.application_dir, 'aisprint', 'designs')
         with open(os.path.join(designs_dir, 'component_partitions.yaml'), 'w') as f:
             yaml.dump(component_partitions, f)

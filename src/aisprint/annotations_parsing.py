@@ -39,7 +39,7 @@ def parse_aisprint_annotations(src_dir):
 def store_aisprint_annotations(application_dir):
     ''' Parse AI-SPRINT annotations from the main.py functions of the components.
 
-        Annotations are stored in application_dir/annotations.yaml file.
+        Annotations are stored in application_dir/common_config/annotations.yaml file.
     '''
 
     # Parse annotations
@@ -63,9 +63,10 @@ def store_aisprint_annotations(application_dir):
         raise RuntimeError(error_msg)
     
     # Save annotations
-    with open(os.path.join(application_dir, 'annotations.yaml'), 'w') as f:
+    with open(os.path.join(application_dir, 'common_config', 'annotations.yaml'), 'w') as f:
         yaml.dump(annotations_dict, f)
-    print("* Annotations stored in {}\n".format(os.path.join(application_dir, 'annotations.yaml')))
+    print("* Annotations stored in {}\n".format(
+        os.path.join(application_dir, 'common_config', 'annotations.yaml')))
 
     return annotations_dict
 
@@ -74,10 +75,10 @@ def validate_aisprint_annotations(application_dir):
     '''
 
     # Load annotations
-    with open(os.path.join(application_dir, 'annotations.yaml'), 'r') as f:
+    with open(os.path.join(application_dir, 'common_config', 'annotations.yaml'), 'r') as f:
         annotations_dict = yaml.safe_load(f)
 
-    dag_file = os.path.join(application_dir, 'application_dag.yaml')
+    dag_file = os.path.join(application_dir, 'common_config', 'application_dag.yaml')
     
     # Validate annotations
     print("Validating AI-SPRINT annotations.. ", end=' ')

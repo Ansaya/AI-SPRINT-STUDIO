@@ -10,7 +10,7 @@ class AnnotationManager(ABC):
         self.application_dir = application_dir
         self.designs_dir = os.path.join(application_dir, 'aisprint', 'designs')
         self.deployments_dir = os.path.join(application_dir, 'aisprint', 'deployments')
-        with open(os.path.join(application_dir, 'annotations.yaml'), 'r') as f:
+        with open(os.path.join(application_dir, 'common_config', 'annotations.yaml'), 'r') as f:
             self.annotations = yaml.safe_load(f)
 
     @abstractmethod

@@ -1,12 +1,13 @@
+from email.mime import application
 import os
 import argparse 
-import yaml
 
 from aisprint.application_preprocessing import ApplicationPreprocessor
+from aisprint.deployments_generators import BaseDeploymentGenerator
 
-from .utils import parse_dag
+from .utils import (parse_dag, get_annotation_managers, 
+                    run_annotation_managers)
 from .annotations_parsing import run_aisprint_parser
-from .deployments_creation import create_aisprint_deployments
 
 def run_design(application_dir):
 
@@ -61,9 +62,33 @@ def run_design(application_dir):
     application_preprocessor.create_base_design()
     # ---------------------------------------
 
-    # 4) Create AI-SPRINT deployments 
-    create_aisprint_deployments(application_dir=application_dir) 
+    # 4) Run SPACE4AI-D-partitioner
+    # -----------------------------
+    # -----------------------------
+
+    # 5) Create AI-SPRINT base deployment with BaseDeploymentGenerator
+    base_deployment_generator = BaseDeploymentGenerator(application_dir)
+    base_deployment_generator.create_deployment(deployment_name='base', 
+        dag_filename=os.path.join(application_dir, 'common_config', 'application_dag.yaml'))
     # -------------------------------
+
+    # 6) Run annotation managers for optimal deployment
+    # (e.g., exec_time to generate the constraints)
+    # -------------------------------------------------
+
+    # Get all annotation managers
+    annotation_managers_dict = get_annotation_managers(application_dir=application_dir)
+
+    # Run annotation manager for optimal deployment 
+    optimal_deployment_symlink = os.path.join(
+        application_dir, 'aisprint', 'deployments', 'optimal_deployment')
+    optimal_deployment_name = os.path.basename(
+        os.path.normpath(os.readlink(optimal_deployment_symlink)))
+    print("Generating configuration files for the optimal deployment based on the found AI-SPRINT annotations..", end=' ')
+    run_annotation_managers(annotation_managers=annotation_managers_dict, 
+                            deployment_name=optimal_deployment_name)
+    print("DONE.\n")
+    # -------------------------------------------------
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

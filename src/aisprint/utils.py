@@ -3,7 +3,6 @@ import shutil
 import yaml
 import numpy as np
 
-
 AISPRINT_ANNOTATIONS = ['component_name', 'exec_time', 'expected_throughput', 
                         'partitionable_model', 'device_constraints', 'early_exits_model', 'annotation']
 
@@ -67,12 +66,34 @@ def parse_dag(dag_file):
     return dag_dict, num_components
     
 def get_component_folder(application_dir, component_name):
-    with open(os.path.join(application_dir, 'annotations.yaml'), 'r') as f:
+    with open(os.path.join(application_dir, 'common_config', 'annotations.yaml'), 'r') as f:
         annotations_dict = yaml.safe_load(f)
 
     for main_path, annotations in annotations_dict.items():
         if annotations['component_name']['name'] == component_name:
             return main_path.split('main.py')[0] 
+
+def get_annotation_managers(application_dir):
+    ''' Return annotation managers dictionary with items
+        annotation: AnnotationManager
+    '''
+
+    from .annotations import annotation_managers
+
+    with open(os.path.join(application_dir, 'common_config', 'application_dag.yaml'), 'r') as f:
+        dag_dict = yaml.safe_load(f)
+    application_name = dag_dict['System']['name'] 
+
+    annotation_managers_dict = {}
+    for aisprint_annotation in AISPRINT_ANNOTATIONS:
+        if aisprint_annotation == 'annotation':
+            continue
+        manager_module_name = aisprint_annotation + '_manager'
+        manager_class_name = "".join([s.capitalize() for s in manager_module_name.split('_')])
+        manager_class = getattr(annotation_managers, manager_class_name)
+        annotation_managers_dict[aisprint_annotation] = manager_class(
+            application_name=application_name, application_dir=application_dir)
+    return annotation_managers_dict
 
 def run_annotation_managers(annotation_managers, deployment_name):
     # Run the annotation manager corresponding to each annotation
