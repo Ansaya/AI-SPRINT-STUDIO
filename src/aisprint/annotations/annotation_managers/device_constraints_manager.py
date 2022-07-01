@@ -17,7 +17,3 @@ class DeviceConstraintsManager(AnnotationManager):
     def process_annotations(self, args):
         # TODO
         pass
-
-    def generate_configuration_files(self, deployment_name):
-        # TODO
-        pass

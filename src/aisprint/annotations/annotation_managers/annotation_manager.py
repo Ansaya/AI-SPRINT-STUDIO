@@ -16,7 +16,3 @@ class AnnotationManager(ABC):
     @abstractmethod
     def process_annotations(self, args):
         pass
-
-    @abstractmethod
-    def generate_configuration_files(self, deployment_name):
-        pass

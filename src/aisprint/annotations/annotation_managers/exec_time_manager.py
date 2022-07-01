@@ -213,20 +213,20 @@ class ExecTimeManager(AnnotationManager):
 
     def process_annotations(self, args):
         ''' Process annotations dictionary to compute the local/global time constraints.
+
+            Input:
+                - args: Python dict with the following items
+                    - deployment_name: name of the deployment
         '''
+        deployment_name = args['deployment_name'] 
+
+        #  Need to use DAG in the case of partitions
+        dag_file = os.path.join(self.deployments_dir, deployment_name, 'application_dag.yaml')
+
         # Use the DAG as additional information
-        qos_constraints = self.get_qos_constraints(dag_file=args['dag_file'])
-        return qos_constraints
+        qos_constraints = self.get_qos_constraints(dag_file=dag_file)
 
-
-    def generate_configuration_files(self, deployment_name):
-        # Use the DAG to generate new annotations in the
-        # case of a partitions
-        args = {}
-        args['dag_file'] = os.path.join(self.deployments_dir, deployment_name, 'application_dag.yaml')
-       
-        qos_constraints = self.process_annotations(args)
-        
-        qos_filename = os.path.join(self.deployments_dir, deployment_name, 'ams', 'qos_contraints.yaml')
+        # Save QoS constraints file for AMS
+        qos_filename = os.path.join(self.deployments_dir, deployment_name, 'ams', 'qos_constraints.yaml')
         with open(qos_filename, 'w') as f:
             yaml.dump(qos_constraints, f, default_flow_style=None)

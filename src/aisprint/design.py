@@ -5,8 +5,7 @@ import argparse
 from aisprint.application_preprocessing import ApplicationPreprocessor
 from aisprint.deployments_generators import BaseDeploymentGenerator
 
-from .utils import (parse_dag, get_annotation_managers, 
-                    run_annotation_managers)
+from .utils import parse_dag, get_annotation_manager
 from .annotations_parsing import run_aisprint_parser
 
 def run_design(application_dir):
@@ -76,17 +75,17 @@ def run_design(application_dir):
     # (e.g., exec_time to generate the constraints)
     # -------------------------------------------------
 
-    # Get all annotation managers
-    annotation_managers_dict = get_annotation_managers(application_dir=application_dir)
-
-    # Run annotation manager for optimal deployment 
+    # Run exec_time annotation manager for optimal deployment 
+    annotation_manager = get_annotation_manager(
+        application_dir=application_dir, which_annotation='exec_time')
     optimal_deployment_symlink = os.path.join(
         application_dir, 'aisprint', 'deployments', 'optimal_deployment')
     optimal_deployment_name = os.path.basename(
         os.path.normpath(os.readlink(optimal_deployment_symlink)))
-    print("Generating configuration files for the optimal deployment based on the found AI-SPRINT annotations..", end=' ')
-    run_annotation_managers(annotation_managers=annotation_managers_dict, 
-                            deployment_name=optimal_deployment_name)
+    print("Generating QoS constraints for the optimal deployment..", end=' ')
+    input_args = {'deployment_name': optimal_deployment_name}
+    annotation_manager.process_annotations(input_args)
+
     print("DONE.\n")
     # -------------------------------------------------
 

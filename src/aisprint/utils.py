@@ -95,7 +95,32 @@ def get_annotation_managers(application_dir):
             application_name=application_name, application_dir=application_dir)
     return annotation_managers_dict
 
+def get_annotation_manager(application_dir, which_annotation):
+    ''' Return AnnotationManager of 'which_annotation'. 
+    '''
+
+    from .annotations import annotation_managers
+
+    with open(os.path.join(application_dir, 'common_config', 'application_dag.yaml'), 'r') as f:
+        dag_dict = yaml.safe_load(f)
+    application_name = dag_dict['System']['name'] 
+
+    manager_module_name = which_annotation + '_manager'
+    manager_class_name = "".join([s.capitalize() for s in manager_module_name.split('_')])
+    manager_class = getattr(annotation_managers, manager_class_name)
+    annotation_manager = manager_class(
+        application_name=application_name, application_dir=application_dir)
+    return annotation_manager 
+
 def run_annotation_managers(annotation_managers, deployment_name):
+    # Run the annotation manager corresponding to each annotation
+    for aisprint_annotation in AISPRINT_ANNOTATIONS:
+        if aisprint_annotation == 'annotation':
+            continue
+        annotation_manager = annotation_managers[aisprint_annotation]
+        annotation_manager.generate_configuration_files(deployment_name)
+
+def run_annotation_manager(annotation_manager, deployment_name):
     # Run the annotation manager corresponding to each annotation
     for aisprint_annotation in AISPRINT_ANNOTATIONS:
         if aisprint_annotation == 'annotation':
