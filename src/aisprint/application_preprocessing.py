@@ -42,7 +42,7 @@ class ApplicationPreprocessor():
         component_partitions = {'components': {}}
         for component_name in dag_dict['System']['components']:
             component_partitions['components'][component_name] = {}
-            component_partitions['components'][component_name]['partitions'] = [component_name]
+            component_partitions['components'][component_name]['partitions'] = ['base']
         designs_dir = os.path.join(self.application_dir, 'aisprint', 'designs')
         with open(os.path.join(designs_dir, 'component_partitions.yaml'), 'w') as f:
             yaml.dump(component_partitions, f)

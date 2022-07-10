@@ -1,6 +1,9 @@
+import os
 import yaml
 
 from .annotation_manager import AnnotationManager
+from aisprint.space4aidpartitioner import SPACE4AIDPartitioner
+from aisprint.space4aidpartitioner import CodePartitioner
 
 
 class PartitionableModelManager(AnnotationManager):
@@ -14,10 +17,40 @@ class PartitionableModelManager(AnnotationManager):
         also check errors in the annotations' format.
     '''
 
-    def process_annotations(self, args):
-        # TODO
-        pass
+    def process_annotations(self, args=None):
+        ''' Get partitionable models and generate partition designs by running SPACE4AIDPartitioner.
+        ''' 
 
-    def generate_configuration_files(self, deployment_name):
-        # TODO
-        pass
+        # SPACE4AI-D-partitioner
+        # ----------------------
+        print("Running SPACE4AI-D-partitioner...")
+        for _, component_arguments in self.annotations.items():
+            if 'partitionable_model' in component_arguments:
+                onnx_file = component_arguments['partitionable_model']['onnx_file'] 
+                component_name = component_arguments['component_name']['name']
+
+                partitioner = SPACE4AIDPartitioner(
+                    self.application_dir, component_name, onnx_file)
+                found_partitions = partitioner.get_partitions()
+
+                found_partitions = ['base'] + found_partitions
+
+                component_partitions_file = os.path.join(self.designs_dir, 'component_partitions.yaml')
+                if not os.path.exists(component_partitions_file):
+                    component_partitions = {'components': {
+                        component_name: {'partitions': found_partitions}}}
+                else:
+                    with open(component_partitions_file, 'r') as f:
+                        component_partitions = yaml.safe_load(f)
+                        component_partitions['components'][component_name] = {
+                            'partitions': found_partitions}
+                with open(component_partitions_file, 'w') as f:
+                    yaml.dump(component_partitions, f)
+        # ----------------------
+
+        # Code partitioner
+        # ----------------
+        print("Generating code of the partitions..")
+        code_partitioner = CodePartitioner(application_dir=self.application_dir)
+        code_partitioner.generate_code_partitions()
+        # ----------------

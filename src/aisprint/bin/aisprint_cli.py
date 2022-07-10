@@ -16,7 +16,10 @@ def new_application(application_name):
     extra_context = {'application_name': application_name} if application_name else {}
     template_file = pkg_resources.resource_filename('aisprint', 'application_template/application_template.zip')
     cookiecutter(template_file, no_input=no_input, extra_context=extra_context)
-    print("DONE. New AI-SPRINT application '{}' has been created.".format(application_name))
+    if application_name:
+        print("DONE. New AI-SPRINT application '{}' has been created.".format(application_name))
+    else: 
+        print("DONE. New AI-SPRINT application has been created.")
 
 @click.command()
 @click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)

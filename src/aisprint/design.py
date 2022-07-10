@@ -61,10 +61,14 @@ def run_design(application_dir):
     application_preprocessor.create_base_design()
     # ---------------------------------------
 
-    # 4) Run SPACE4AI-D-partitioner
-    # -----------------------------
-    # -----------------------------
-
+    # 4) Run partitionable_model annotation manager 
+    # ---------------------------------------------
+    # Run partitionable_model annotation manager
+    annotation_manager = get_annotation_manager(
+        application_dir=application_dir, which_annotation='partitionable_model')
+    annotation_manager.process_annotations()
+    # ---------------------------------------------
+    
     # 5) Create AI-SPRINT base deployment with BaseDeploymentGenerator
     base_deployment_generator = BaseDeploymentGenerator(application_dir)
     base_deployment_generator.create_deployment(deployment_name='base', 

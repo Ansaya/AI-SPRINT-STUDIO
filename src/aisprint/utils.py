@@ -4,7 +4,7 @@ import yaml
 import numpy as np
 
 AISPRINT_ANNOTATIONS = ['component_name', 'exec_time', 'expected_throughput', 
-                        'partitionable_model', 'device_constraints', 'early_exits_model', 'annotation']
+                        'partitionable_model', 'device_constraints', 'early_exits_model', 'security', 'annotation']
 
 def parse_dag(dag_file):
     with open(dag_file, 'r') as f:

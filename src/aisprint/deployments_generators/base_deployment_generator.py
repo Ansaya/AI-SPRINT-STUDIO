@@ -45,7 +45,7 @@ class BaseDeploymentGenerator(DeploymentGenerator):
             symlink = os.path.join(
                 os.path.abspath(self.deployment_dir), 'src', component_name)
             os.symlink(source_design, symlink)
-    
+
         # Initialize the symbolic link to the optimal deployment to point 
         # to the base deployment
         source_deployment = os.path.join(
@@ -54,3 +54,4 @@ class BaseDeploymentGenerator(DeploymentGenerator):
             os.path.abspath(self.application_dir), 'aisprint', 'deployments', 'optimal_deployment')
         os.symlink(source_deployment, current_design_symlink)
         print("Current deployment is '{}'.\n".format(deployment_name))
+    

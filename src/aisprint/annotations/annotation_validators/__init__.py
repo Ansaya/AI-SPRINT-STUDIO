@@ -5,3 +5,4 @@ from .device_constraints_validator import DeviceConstraintsValidator
 from .partitionable_model_validator import PartitionableModelValidator
 from .expected_throughput_validator import ExpectedThroughputValidator
 from .early_exits_model_validator import EarlyExitsModelValidator
+from .security_validator import SecurityValidator
