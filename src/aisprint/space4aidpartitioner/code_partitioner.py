@@ -56,22 +56,12 @@ class CodePartitioner():
             print(first_half)
             self._generate_first_half_code(
                 component_name=component_name, first_half=first_half, has_exec_time=has_exec_time)
-            # p1 = Process(target=self._generate_first_half_code, 
-            #              args=(component_name, first_half,))
             
             # 2nd half
             second_half = [p for p in partition_dirs if re.search("^partition[1-9]+_2", p)]
             print(second_half)
             self._generate_second_half_code(
                 component_name=component_name, second_half=second_half, has_exec_time=has_exec_time)
-            # p2 = Process(target=self._generate_second_half_code, 
-            #              args=(component_name, second_half,))
-
-            # # Run in parallel
-            # p1.start()
-            # p2.start()
-            # p1.join()
-            # p2.join()
 
             # Copy all the other files, except onnx nad main.py 
             for h in first_half+second_half:
@@ -119,6 +109,10 @@ class CodePartitioner():
                 break
             spaces_str += " "
         new_inference_str = spaces_str + "result_dict =" + inference_cmd + "\n"
+        
+        # Get __name__ line
+        name_row = [l for l in main_code if ("__name__=='__main__'" in l.replace(" ", "") and 'import' not in l)]
+        name_line = np.where(np.array(main_code) == name_row[0])[0][0]
 
         # Generate save string
         save_str = ""
@@ -126,7 +120,7 @@ class CodePartitioner():
         save_str += "with open(args['output'], 'wb') as f:\n"
         save_str += spaces_str
         save_str += "    "
-        save_str += "pickle.dump(result_dict, f)\n"
+        save_str += "pickle.dump(result_dict, f)\n\n"
 
 
         # Start generating new script
@@ -138,6 +132,7 @@ class CodePartitioner():
         gen_script += main_code[0:inference_line]
         gen_script += [new_inference_str]
         gen_script += [save_str]
+        gen_script += main_code[name_line:]
         
         for fh in first_half:
             partition_dir = os.path.join(self.designs_dir, component_name, fh)
@@ -188,7 +183,7 @@ class CodePartitioner():
         load_str += "with open(args['input'], 'rb') as f:\n"
         load_str += spaces_str
         load_str += "    "
-        load_str += "pickle.load(f)\n"
+        load_str += "input_dict = pickle.load(f)\n"
 
         # Start generating new script
         
