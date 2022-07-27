@@ -1,0 +1,32 @@
+Performance:
+     component1:
+        RasPi_NeuralStick: 
+          regressor_file: MLmodels/ReviewModels/blur_RPiNS.pickle
+        MiniPCRyzen: 
+          regressor_file: MLmodels/ReviewModels/blur_MiniPC.pickle
+     component1_partition1_1:
+        RasPi_NeuralStick: 
+          regressor_file: MLmodels/ReviewModels/blur_partition1_1_RPiNS.pickle
+        MiniPCRyzen: 
+          regressor_file: MLmodels/ReviewModels/blur_partition1_1_MiniPC.pickle
+      component1_partition1_2:
+        VM1: 
+          regressor_file: MLmodels/ReviewModels/blur_partition1_2_VM1.pickle
+      component1_partition2_1:
+        RasPi_NeuralStick: 
+          regressor_file: MLmodels/ReviewModels/blur_partition2_1_RPiNS.pickle
+        MiniPCRyzen: 
+          regressor_file: MLmodels/ReviewModels/blur_partition2_1_MiniPC.pickle  
+      component1_partition2_2:
+        VM1: 
+          regressor_file: MLmodels/ReviewModels/blur_partition2_2_VM1.pickle
+     
+    component2:
+        VM1: 
+          regressor_file: MLmodels/ReviewModels/mask_VM1.pickle
+        VM2: 
+          regressor_file: MLmodels/ReviewModels/mask_VM2.pickle
+        VM3: 
+          regressor_file: MLmodels/ReviewModels/mask_VM3.pickle
+       
+       
