@@ -1,0 +1,13 @@
+System:
+    name: Mask Detection Application
+    LocalConstraints:
+        localConstraint1:
+            componentName: component1
+            threshold: 2
+        localConstraint2:
+            componentName: component2
+            threshold: 3
+    GlobalConstraints:
+        globalConstraint1:
+            pathComponents: [component1, component2]
+            threshold: 5
