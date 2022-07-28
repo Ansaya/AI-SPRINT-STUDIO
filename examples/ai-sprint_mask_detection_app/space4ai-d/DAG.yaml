@@ -1,0 +1,4 @@
+System:
+    name: Mask Detection Application
+        components: [component1, component2]
+        dependencies: [[component1, component2, 1]]
