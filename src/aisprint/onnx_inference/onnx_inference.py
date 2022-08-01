@@ -14,18 +14,18 @@ def load_and_inference(onnx_file, input_dict):
     model_num_inputs = len(net_feed_input)
 
     # # Single Input ONNX File --> string
-    # if model_num_inputs == 1:
-    #     model_input = net_feed_input[0]
-    # # Multi-Input ONNX File --> list of string
-    # else:
-    #     model_input = net_feed_input
+    if model_num_inputs == 1:
+        model_input = net_feed_input[0]
+    # Multi-Input ONNX File --> list of string
+    else:
+        model_input = net_feed_input
     
     so = ort.SessionOptions()
     ort_session = ort.InferenceSession(onnx_file, so, providers=['CPUExecutionProvider'])
 
     session_input = {}
-    for node_name, tensor in net_feed_input:
-        session_input[node_name] = tensor
+    for node_name, _ in net_feed_input:
+        session_input[node_name] = input_dict[node_name] 
 
     result = ort_session.run(None, session_input)
 
@@ -45,4 +45,4 @@ def load_and_inference(onnx_file, input_dict):
         if input not in net_feed_input:
             return_dict[input] = input_dict[input]
     
-    return return_dict
+    return return_dict, result

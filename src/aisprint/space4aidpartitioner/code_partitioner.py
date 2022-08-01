@@ -105,10 +105,13 @@ class CodePartitioner():
         # Compute number of spaces at the beginning
         spaces_str = ""
         for i in range(len(inference_str_res)):
-            if inference_str_res[i] != " ":
+            if inference_str_res[i] not in [" ", "\t"]:
                 break
-            spaces_str += " "
-        new_inference_str = spaces_str + "result_dict =" + inference_cmd + "\n"
+            if inference_str_res[i]  == " ":
+                spaces_str += " "
+            elif inference_str_res[i] == "\t":
+                spaces_str += "\t"
+        new_inference_str = spaces_str + "result_dict, _ =" + inference_cmd + "\n"
         
         # Get __name__ line
         name_row = [l for l in main_code if ("__name__=='__main__'" in l.replace(" ", "") and 'import' not in l)]
@@ -165,9 +168,13 @@ class CodePartitioner():
         # Compute number of spaces at the beginning
         spaces_str = ""
         for i in range(len(inference_str_res)):
-            if inference_str_res[i] != " ":
+            if inference_str_res[i] not in [" ", "\t"]:
                 break
-            spaces_str += " "
+            if inference_str_res[i]  == " ":
+                spaces_str += " "
+            elif inference_str_res[i] == "\t":
+                spaces_str += "\t"
+        new_inference_str = spaces_str + "return_dict, result =" + inference_cmd + "\n"
 
         # Get main script line
         main_row = [l for l in main_code if ('def main(' in l and 'import' not in l)]
@@ -193,7 +200,8 @@ class CodePartitioner():
         # Add load + inference + post-processing
         gen_script += main_code[0:main_line+1]
         gen_script += [load_str]
-        gen_script += main_code[inference_line:name_line] 
+        gen_script += [new_inference_str]
+        gen_script += main_code[inference_line+1:name_line] 
 
         # Add new if __name__ == '__main__'
         gen_script += ["\n"]

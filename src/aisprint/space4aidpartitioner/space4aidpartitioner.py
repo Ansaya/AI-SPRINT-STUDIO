@@ -63,10 +63,9 @@ class SPACE4AIDPartitioner():
                     continue
             else:
                 continue
-
-            dims = [int(dim['dimValue']) for dim in shape['dim']]
+            
+            dims = [int(dim['dimValue']) for dim in shape['dim'] if 'dimValue' in dim]
             num_pixels = np.prod(dims)
-
 
             shape_info_dict[node_name] = num_pixels
         
@@ -92,6 +91,7 @@ class SPACE4AIDPartitioner():
         #Make a split for every layer in the model
         ln = 0
         # for layer in enumerate_model_node_outputs(onnx_model):
+        partitioned_layers = []
         for layer in tqdm(sorted_nodes):
             # Initialize partitions designs folders
             which_partition = 'partition{}'.format(ln+1)
@@ -151,10 +151,12 @@ class SPACE4AIDPartitioner():
             # Found first smallest partition, then break
             ln = ln + 1
 
+            partitioned_layers.append(layer)
+
             if ln == 2:
                 break
                 
-        print("Model partitioned at layer: {}\n".format(layer))
+        print("Model partitioned at layers: {}\n".format(partitioned_layers))
         return found_partitions
         # ------------------------------------------------------
         

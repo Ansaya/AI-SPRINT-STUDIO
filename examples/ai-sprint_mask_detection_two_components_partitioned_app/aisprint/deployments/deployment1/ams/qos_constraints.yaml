@@ -1,0 +1,13 @@
+System:
+    name: ai-sprint_mask_detection_two_components_partitioned_app 
+    LocalConstraints:
+    GlobalConstraints:
+        globalConstraint1:
+            pathComponents: [blurry-faces-onnx_partition1_1, blurry-faces-onnx_partition1_2]
+            threshold: 20
+        globalConstraint2:
+            pathComponents: [mask-detector-onnx_partition1_1, mask-detector-onnx_partition1_2]
+            threshold: 10
+        globalConstraint3:
+            pathComponents: [blurry-faces-onnx_partition1_1, blurry-faces-onnx_partition1_2, mask-detector-onnx_partition1_1, mask-detector-onnx_partition1_2]
+            threshold: 40
