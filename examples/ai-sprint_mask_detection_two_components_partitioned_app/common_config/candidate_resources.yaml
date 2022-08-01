@@ -142,7 +142,7 @@ System:
                      accelerators:
                 	    accelerator1:
                 	       name: GPUa10
-                         GFLOPS: 31240
+                            GFLOPS: 31240
                 	       powerDraw: 150
                 	       memory: 24576
                 	       processors:
