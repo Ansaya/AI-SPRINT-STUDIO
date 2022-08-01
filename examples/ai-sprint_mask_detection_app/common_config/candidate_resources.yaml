@@ -139,19 +139,6 @@ System:
                         computingUnits: 8
                         internalMemory: 64
                         SGXFlag: False
-                     accelerators:
-                	    accelerator1:
-                	       name: GPUa10
-                           GFLOPS: -
-                	       powerDraw: -
-                	       memory: 24576
-                	       processors:
-                	           processor1:
-                	              name: G5
-                	              type: GPU
-                                  architecture: nvidia a10g
-                                  computingUnits: 1
-                                  internalMemory: 0.256
              resource2:
                   name: VM3
                   totalNodes: 5
