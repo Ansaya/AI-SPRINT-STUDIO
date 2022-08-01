@@ -52,34 +52,6 @@ System:
                               architecture: SHAVE
                               computingUnits: 16
                               internalMemory: 0.256
-         computationalLayer2:
-            name: Private cloud Layer
-            number: 2
-            type: PhysicalAlreadyProvisioned
-            Resources: 
-               resource1:
-                  name: VM1
-                  totalNodes: 1
-                  description: Inhouse VM Type 1 UPV	
-                  cost: 0.675
-                  memorySize: 8192
-                  storageSize: 25
-                  storageType: SSD
-                  operatingSystemDistribution: Ubuntu
-                  operatingSystemType: Linux
-                  operatingSystemVersion: 22.04
-                  operatingSystemImageId: ost://horsemem.i3m.upv.es/c99bc2af-76dd-498f-ba6f-36889db66856 XXXX
-                  secureBoot: False
-                  measuredBoot: False
-                  onSpot: False
-                  processors:
-                     processor1:
-                        name: Xeon
-                        type: SkyLake
-                        architecture: amd64
-                        computingUnits: 4
-                        internalMemory: 64
-                        SGXFlag: False
     ND2:
       name: Network Domain 2
       AccessDelay: 0.00000277
