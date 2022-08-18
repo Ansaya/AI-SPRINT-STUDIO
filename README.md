@@ -30,8 +30,8 @@ python3 -m pip install cookiecutter==2.1.1
 
 ### Step2: Install AI-SPRINT 
 ```
-git clone https://gitlab.polimi.it/ai-sprint/ai-sprint-api.git
-cd ai-sprint-api
+git clone https://gitlab.polimi.it/ai-sprint/ai-sprint-design.git
+cd ai-sprint-design
 python3 -m pip install . 
 ```
 
@@ -49,4 +49,25 @@ aisprint new-application --application_name NAME
 ### example application in 'examples'
 ```
 aisprint design --application_dir ./NAME
+```
+## Docker
+---
+### Step1: Build the Docker image
+```
+git clone https://gitlab.polimi.it/ai-sprint/ai-sprint-design.git
+cd ai-sprint-design
+docker build -t ai-sprint/design:1.0 -f docker/Dockerfile
+```
+### Step2: Try design --help
+```
+docker run ai-sprint/design:1.0 aisprint --help
+```
+
+### Example1: Create new application
+```
+docker run ai-sprint/design:1.0 aisprint new-application --application_name NAME
+```
+### Example2: Parse annotations and create designs 
+```
+docker run -v /PATH/TO/APPLICATION_DIR/:/NAME ai-sprint/design:1.0 aisprint design --application_dir NAME
 ```
