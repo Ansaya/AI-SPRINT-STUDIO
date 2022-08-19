@@ -38,7 +38,7 @@ class ExecTimeManager(AnnotationManager):
         # Build a partitions dictionary with the format:
         # {'CX': {'partitions': ['CX_1', 'CX_2'], 'last': 'CX_2'}} 
         # It is used later to easily obtain the partitions of a component and 
-        # which one is the last one in the workflow. 
+        # to identify the last one in the workflow. 
         partitions_dict = {}
         for dag_component in dag_components:
             if dag_component in annotations_components:
@@ -58,10 +58,10 @@ class ExecTimeManager(AnnotationManager):
         # but only with the 'exec_time'. To be used later to obtain the local and global constraints
         dag_corrected_annotations = {}
 
-        qos_constraints = {'System': {}}
-        qos_constraints['name'] = self.application_name
-        qos_constraints['System']['LocalConstraints'] = []
-        qos_constraints['System']['GlobalConstraints'] = []
+        qos_constraints = {'system': {}}
+        qos_constraints['system']['name'] = self.application_name
+        qos_constraints['system']['local_constraints'] = {}
+        qos_constraints['system']['global_constraints'] = {}
 
         local_constraint_idx = 0
         global_constraint_idx = 0
@@ -89,10 +89,9 @@ class ExecTimeManager(AnnotationManager):
 
                     # Save local constraint
                     local_constraint_idx += 1
-                    qos_constraints['System']['LocalConstraints'].append(
-                        {'localConstraint'+str(local_constraint_idx): {
-                            'component name': dag_component, 'threshold': local_time_thr}}
-                    )
+                    qos_constraints['system']['local_constraints'][
+                        'local_constraint_'+str(local_constraint_idx)] = {
+                            'component_name': dag_component, 'threshold': local_time_thr}
 
                 # We need to be robust to the case in which a component is not partitioned
                 # but it is originally involved into a global constraints and at least 
@@ -127,10 +126,9 @@ class ExecTimeManager(AnnotationManager):
 
                     # Save global constraint
                     global_constraint_idx += 1
-                    qos_constraints['System']['GlobalConstraints'].append(
-                        {'globalConstraint'+str(global_constraint_idx): {
-                            'path components': new_prev_components, 'threshold': global_time_thr}}
-                    )
+                    qos_constraints['system']['global_constraints'][
+                        'global_constraint_'+str(global_constraint_idx)] =  {
+                            'components_path': new_prev_components, 'threshold': global_time_thr}
             else:
                 # In this case the component in the DAG is not in the original annotations.
                 # This means that the name of that component has been changed, and this can happen
@@ -175,10 +173,9 @@ class ExecTimeManager(AnnotationManager):
                     
                     # Save global constraint
                     global_constraint_idx += 1
-                    qos_constraints['System']['GlobalConstraints'].append(
-                        {'globalConstraint'+str(global_constraint_idx): {
-                            'path components': new_prev_components, 'threshold': global_time_thr}}
-                    )
+                    qos_constraints['system']['global_constraints'][
+                        'global_constraint_'+str(global_constraint_idx)] = {
+                            'components_path': new_prev_components, 'threshold': global_time_thr}
                     
                 if 'global_time_thr' in original_exec_time.keys():
                     # Original component is involved in a global constraint
@@ -204,10 +201,9 @@ class ExecTimeManager(AnnotationManager):
                     
                     # Save global constraint
                     global_constraint_idx += 1
-                    qos_constraints['System']['GlobalConstraints'].append(
-                        {'globalConstraint'+str(global_constraint_idx): {
-                            'path components': new_prev_components, 'threshold': global_time_thr}}
-                    )
+                    qos_constraints['system']['global_constraints'][
+                        'global_constraint_'+str(global_constraint_idx)] = {
+                            'components_path': new_prev_components, 'threshold': global_time_thr}
         
         return qos_constraints
 
@@ -229,4 +225,4 @@ class ExecTimeManager(AnnotationManager):
         # Save QoS constraints file for AMS
         qos_filename = os.path.join(self.deployments_dir, deployment_name, 'ams', 'qos_constraints.yaml')
         with open(qos_filename, 'w') as f:
-            yaml.dump(qos_constraints, f, default_flow_style=None)
+            yaml.dump(qos_constraints, f) 
