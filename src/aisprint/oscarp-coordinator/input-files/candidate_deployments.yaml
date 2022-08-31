@@ -1,0 +1,80 @@
+Components:
+      component1:
+        name: ffmpeg0
+        candidateExecutionLayers: [1]
+        Containers:
+             container1: 
+                image: linuxserver/ffmpeg:amd64-version-4.4-cli
+                memorySize: 2048
+                computingUnits: 0.9
+                trustedExecution: False
+                networkProtection: False
+                fileSystemProtection: False
+                GPURequirement: False
+                candidateExecutionResources: [ VM ]
+      component2:
+        name: librosa
+        candidateExecutionLayers: [1]
+        Containers:
+             container1:
+                image: scrapjack/librosa:stable
+                memorySize: 2048
+                computingUnits: 0.9
+                trustedExecution: False
+                networkProtection: False
+                fileSystemProtection: False
+                GPURequirement: False
+                candidateExecutionResources: [ VM ]
+      component3:
+        name: ffmpeg1
+        candidateExecutionLayers: [ 1 ]
+        Containers:
+          container1:
+            image: linuxserver/ffmpeg:arm64v8-4.4-cli-ls52
+            memorySize: 2048
+            computingUnits: 0.9
+            trustedExecution: False
+            networkProtection: False
+            fileSystemProtection: False
+            GPURequirement: False
+            candidateExecutionResources: [ RasPi ]
+      component4:
+        name: ffmpeg2
+        candidateExecutionLayers: [ 1 ]
+        Containers:
+          container1:
+            image: linuxserver/ffmpeg:amd64-version-4.4-cli
+            memorySize: 2048
+            computingUnits: 0.9
+            trustedExecution: False
+            networkProtection: False
+            fileSystemProtection: False
+            GPURequirement: False
+            candidateExecutionResources: [ VM ]
+      component5:
+        name: deepspeech
+        candidateExecutionLayers: [ 1 ]
+        Containers:
+          container1:
+            image: scrapjack/deepspeech:stable
+            memorySize: 2048
+            computingUnits: 0.9
+            trustedExecution: False
+            networkProtection: False
+            fileSystemProtection: False
+            GPURequirement: False
+            candidateExecutionResources: [ AWS ]
+      component6:
+        name: ubuntu
+        candidateExecutionLayers: [ 1 ]
+        Containers:
+          container1:
+            image: ubuntu:20.04
+            memorySize: 2048
+            computingUnits: 0.9
+            trustedExecution: False
+            networkProtection: False
+            fileSystemProtection: False
+            GPURequirement: False
+            candidateExecutionResources: [ AWS ]
+

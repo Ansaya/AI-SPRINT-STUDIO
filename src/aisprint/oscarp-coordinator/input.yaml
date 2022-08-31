@@ -1,0 +1,76 @@
+configuration:
+  services:
+  - ffmpeg0:
+      cluster: VM
+      image: linuxserver/ffmpeg:amd64-version-4.4-cli
+      input_bucket: bucket0
+      output_bucket: bucket1
+  - librosa:
+      cluster: VM
+      image: scrapjack/librosa:stable
+      input_bucket: bucket1
+      output_bucket: bucket2
+  - ffmpeg1:
+      cluster: RasPi
+      image: linuxserver/ffmpeg:arm64v8-4.4-cli-ls52
+      input_bucket: bucket2
+      output_bucket: bucket3
+  - ffmpeg2:
+      cluster: VM
+      image: linuxserver/ffmpeg:amd64-version-4.4-cli
+      input_bucket: bucket3
+      output_bucket: bucket4
+  - deepspeech:
+      cluster: AWS
+      image: scrapjack/deepspeech:stable
+      input_bucket: bucket4
+      output_bucket: bucket5
+  - ubuntu:
+      cluster: AWS
+      image: ubuntu:20.04
+      input_bucket: bucket5
+      output_bucket: bucket6
+  clusters:
+  - VM:
+      oscarcli_alias: oscar-vm
+      minio_alias: minio-vm
+      ssh: aisprint@158.42.105.149/10022
+      total_nodes: 8
+      max_cpu_cores: 4.0
+      max_memory_mb: 8192
+  - RasPi:
+      oscarcli_alias: oscar-raspi
+      minio_alias: minio-raspi
+      ssh: grycap@158.42.105.64/10022
+      total_nodes: 3
+      max_cpu_cores: 4.0
+      max_memory_mb: 4096
+  - AWS:
+      oscarcli_alias: oscar-aws
+      minio_alias: minio-aws
+      ssh: null
+      total_nodes: 8
+      max_cpu_cores: 4.0
+      max_memory_mb: 8192
+  input_files:
+    storage_bucket: storage
+    filename: test_charlie.mp4
+    number_of_files: 10
+    batch_size: 2
+    distribution: deterministic
+    inter_upload_time: 0
+  run:
+    campaign_dir: video-transcriber-10-files/deployments
+    run_name: deployment_0
+    repetitions: 3
+    cooldown_time: 30
+    parallelism:
+    - 4
+    - 8
+  ml_library:
+    interpolation_values:
+    - 16
+    - 24
+  other:
+    time_correction: 2
+    debug: false

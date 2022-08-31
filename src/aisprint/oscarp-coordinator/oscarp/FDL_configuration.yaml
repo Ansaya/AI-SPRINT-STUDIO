@@ -1,0 +1,91 @@
+functions:
+  oscar:
+  - oscar-vm:
+      cpu: '0.9'
+      image: linuxserver/ffmpeg:amd64-version-4.4-cli
+      input:
+      - path: bucket0
+        storage_provider: minio.default
+      memory: 1638Mi
+      name: ffmpeg0
+      output:
+      - path: bucket1
+        storage_provider: minio.minio-vm
+      script: bash-scripts/ffmpeg0.sh
+  - oscar-vm:
+      cpu: '0.9'
+      image: scrapjack/librosa:stable
+      input:
+      - path: bucket1
+        storage_provider: minio.default
+      memory: 1638Mi
+      name: librosa
+      output:
+      - path: bucket2
+        storage_provider: minio.minio-raspi
+      script: bash-scripts/librosa.sh
+  - oscar-raspi:
+      cpu: '0.9'
+      image: linuxserver/ffmpeg:arm64v8-4.4-cli-ls52
+      input:
+      - path: bucket2
+        storage_provider: minio.default
+      memory: 819Mi
+      name: ffmpeg1
+      output:
+      - path: bucket3
+        storage_provider: minio.minio-vm
+      script: bash-scripts/ffmpeg1.sh
+  - oscar-vm:
+      cpu: '0.9'
+      image: linuxserver/ffmpeg:amd64-version-4.4-cli
+      input:
+      - path: bucket3
+        storage_provider: minio.default
+      memory: 1638Mi
+      name: ffmpeg2
+      output:
+      - path: bucket4
+        storage_provider: minio.minio-aws
+      script: bash-scripts/ffmpeg2.sh
+  - oscar-aws:
+      cpu: '0.9'
+      image: scrapjack/deepspeech:stable
+      input:
+      - path: bucket4
+        storage_provider: minio.default
+      memory: 1638Mi
+      name: deepspeech
+      output:
+      - path: bucket5
+        storage_provider: minio.minio-aws
+      script: bash-scripts/deepspeech.sh
+  - oscar-aws:
+      cpu: '0.9'
+      image: ubuntu:20.04
+      input:
+      - path: bucket5
+        storage_provider: minio.default
+      memory: 1638Mi
+      name: ubuntu
+      output:
+      - path: bucket6
+        storage_provider: minio.default
+      script: bash-scripts/ubuntu.sh
+storage_providers:
+  minio:
+    minio-aws:
+      access_key: minio
+      endpoint: https://minio.focused-booth1.im.grycap.net/
+      region: us-east-1
+      secret_key: minio-password
+    minio-raspi:
+      access_key: minio
+      endpoint: https://minio.graspi.im.grycap.net
+      region: us-east-1
+      secret_key: minio-aisprint-2021
+    minio-vm:
+      access_key: minio
+      endpoint: https://minio.quirky-kowalevski6.im.grycap.net
+      region: us-east-1
+      secret_key: minio-aisprint-2022
