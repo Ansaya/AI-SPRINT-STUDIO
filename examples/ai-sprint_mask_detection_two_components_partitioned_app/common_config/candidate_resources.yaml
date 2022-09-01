@@ -70,7 +70,7 @@ System:
                      processor1:
                         name: Ryzen 7
                         type: 4800U
-                        architecture: AMD
+                        architecture: amd64
                         computingUnits: 8
                         internalMemory: 16
                         SGXFlag: False
@@ -135,23 +135,23 @@ System:
                      processor1:
                         name: Xeon
                         type: SkyLake
-                        architecture: IntelX86
+                        architecture: amd64
                         computingUnits: 8
                         internalMemory: 64
                         SGXFlag: False
-                     accelerators:
-                        accelerator1:
-                          name: GPUa10
-                          GFLOPS: 31240
-                          powerDraw: 150
-                          memory: 24576
-                          processors:
-                            processor1:
-                              name: G5
-                              type: GPU
-                              architecture: nvidia a10g
-                              computingUnits: 1
-                              internalMemory: 0.256
+                  accelerators:
+                    accelerator1:
+                      name: GPUa10
+                      GFLOPS: 31240
+                      powerDraw: 150
+                      memory: 24576
+                      processors:
+                        processor1:
+                          name: G5
+                          type: GPU
+                          architecture: nvidia a10g
+                          computingUnits: 1
+                          internalMemory: 0.256
               resource2:
                   name: VM3
                   totalNodes: 5
@@ -172,7 +172,7 @@ System:
                      processor1:
                         name: Xeon
                         type: SkyLake
-                        architecture: IntelX86
+                        architecture: amd64
                         computingUnits: 8
                         internalMemory: 64
                         SGXFlag: False
