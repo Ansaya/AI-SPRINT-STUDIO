@@ -69,30 +69,30 @@ Components:
                 fileSystemProtection: False
                 GPURequirement: False
                 candidateExecutionResources: [VM1, VM2, VM3]
-        component2_partitionX_1:
-           name: mask-detector-onnx-partitionX-1
-           candidateExecutionLayers: [2, 3]
-           Containers:
-             container1: 
-                image: registry.gitlab.polimi.it/ai-sprint/mask-detector-onnx-partitionX-1:tag
-                memorySize: 2048
-                computingUnits: 0.9
-                trustedExecution: False
-                networkProtection: False
-                fileSystemProtection: False
-                GPURequirement: False
-                candidateExecutionResources: [VM1, VM2, VM3]
-        component2_partitionX_2:
-           name: mask-detector-onnx-partitionX-2
-           candidateExecutionLayers: [3, 4]
-           Containers:
-             container1: 
-                image: registry.gitlab.polimi.it/ai-sprint/mask-detector-onnx-partitionX-2:tag
-                memorySize: 2048
-                computingUnits: 0.9
-                trustedExecution: False
-                networkProtection: False
-                fileSystemProtection: False
-                GPURequirement: False
-                candidateExecutionResources: [VM2, VM3, AWS-FaaS]
+      component2_partitionX_1:
+         name: mask-detector-onnx-partitionX-1
+         candidateExecutionLayers: [2, 3]
+         Containers:
+            container1: 
+               image: registry.gitlab.polimi.it/ai-sprint/mask-detector-onnx-partitionX-1:tag
+               memorySize: 2048
+               computingUnits: 0.9
+               trustedExecution: False
+               networkProtection: False
+               fileSystemProtection: False
+               GPURequirement: False
+               candidateExecutionResources: [VM1, VM2, VM3]
+      component2_partitionX_2:
+         name: mask-detector-onnx-partitionX-2
+         candidateExecutionLayers: [3, 4]
+         Containers:
+            container1: 
+               image: registry.gitlab.polimi.it/ai-sprint/mask-detector-onnx-partitionX-2:tag
+               memorySize: 2048
+               computingUnits: 0.9
+               trustedExecution: False
+               networkProtection: False
+               fileSystemProtection: False
+               GPURequirement: False
+               candidateExecutionResources: [VM2, VM3, AWS-FaaS]
             
