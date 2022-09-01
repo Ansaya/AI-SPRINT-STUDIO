@@ -3,6 +3,9 @@ LABEL maintainer="Miguel Caballer <micafer1@upv.es>"
 LABEL version="0.1"
 LABEL description="Base container image for the AI-SPRINT use cases."
 
+ARG GIT_USER=user
+ARG GIT_PASSWORD=pass
+
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir \
     numpy==1.23.0 \
@@ -10,3 +13,10 @@ RUN pip install --no-cache-dir \
     onnx==1.11.0 \
     onnxruntime==1.11.1 \
     protobuf==3.20.1
+
+# Install AI-Sprint monitoring Lib:
+# https://gitlab.polimi.it/ai-sprint/pymonitoring/
+
+RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/pymonitoring.git && \
+    pip install pymonitoring && \
+    rm -rf pymonitoring
