@@ -13,3 +13,4 @@ RUN pip install --no-cache-dir -r requirements-oscarp.txt
 
 COPY . /ai-sprint-design
 RUN cd /ai-sprint-design && python3 -m pip install .
+RUN rm -r /ai-sprint-design

@@ -56,7 +56,7 @@ aisprint design --application_dir ./NAME
 ```
 git clone https://gitlab.polimi.it/ai-sprint/ai-sprint-design.git
 cd ai-sprint-design
-docker build -t ai-sprint/design:1.0 -f docker/Dockerfile
+docker build -t ai-sprint/design:1.0 -f docker/Dockerfile .
 ```
 ### Step2: Try design --help
 ```

@@ -24,7 +24,7 @@ def load_and_inference(onnx_file, input_dict):
     ort_session = ort.InferenceSession(onnx_file, so, providers=['CPUExecutionProvider'])
 
     session_input = {}
-    for node_name, _ in net_feed_input:
+    for node_name in net_feed_input:
         session_input[node_name] = input_dict[node_name] 
 
     result = ort_session.run(None, session_input)
