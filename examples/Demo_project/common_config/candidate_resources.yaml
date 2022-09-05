@@ -92,7 +92,7 @@ System:
                      processor1:
                         name: Xeon
                         type: SkyLake
-                        architecture: IntelX86
+                        architecture: amd64
                         computingUnits: 8
                         internalMemory: 64
                         SGXFlag: False
@@ -114,7 +114,7 @@ System:
                      processor1:
                         name: Xeon
                         type: SkyLake
-                        architecture: IntelX86
+                        architecture: amd64
                         computingUnits: 8
                         internalMemory: 64
                         SGXFlag: False
