@@ -43,7 +43,7 @@ class CodePartitioner():
         
             # Check component has exec_time
             with open(os.path.join(self.application_dir, 'common_config', 'annotations.yaml'), 'r') as f:
-                annotations = yaml.load(f)
+                annotations = yaml.load(f, yaml.FullLoader)
 
             has_exec_time = False
             for _, item in annotations.items():
