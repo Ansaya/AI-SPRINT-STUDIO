@@ -21,7 +21,7 @@ System:
                   operatingSystemDistribution: Raspbian
                   operatingSystemType: Linux
                   operatingSystemVersion: 10
-                  operatingSystemImageId: -
+                  operatingSystemImageId: None
                   secureBoot: string
                   measuredBoot: string
                   storageSize: 64GB

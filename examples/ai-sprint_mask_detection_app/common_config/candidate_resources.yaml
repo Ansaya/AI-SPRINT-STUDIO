@@ -20,13 +20,13 @@ System:
               resource1:
                   name: RaspPi_NeuralStick
                   totalNodes: 3
-                  description: Raspberry PIs 4 Model B with Neural stick 
+                  description: Raspberry PIs 4 Model B with Neural stick
                   cost: 0.6
                   memorySize: 4096
                   operatingSystemDistribution: Raspbian
                   operatingSystemType: Linux
                   operatingSystemVersion: 10
-                  operatingSystemImageId: -
+                  operatingSystemImageId: None 
                   secureBoot: string
                   measuredBoot: string
                   storageSize: 64GB
@@ -39,19 +39,19 @@ System:
                         computingUnits: 4
                         internalMemory: 4
                         SGXFlag: False
-                 	 accelerators:
-                	   accelerator1:
-                	       name: Neural stick 2
-                	       GFLOPS: 100
-                	       powerDraw: 1
-                	       memory: 4096
-                	       processors:
-                	           processor1:
-                	              name: P5
-                	              type: Movidius Myriad X VPU
-                                  architecture: SHAVE
-                                  computingUnits: 16
-                                  internalMemory: 0.256
+                  accelerators:
+                     accelerator1:
+                        name: Neural stick 2
+                        GFLOPS: 100
+                        powerDraw: 1
+                        memory: 4096
+                        processors:
+                           processor1:
+                              name: P5
+                              type: Movidius Myriad X VPU
+                              architecture: SHAVE
+                              computingUnits: 16
+                              internalMemory: 0.256
               resource2:
                   name: MiniPC_Ryzen7
                   totalNodes: 3
@@ -91,8 +91,7 @@ System:
                   operatingSystemDistribution: Ubuntu
                   operatingSystemType: Linux
                   operatingSystemVersion: 22.04
-                  operatingSystemImageId: ost://horsemem.i3m.upv.es/
-                            c99bc2af-76dd-498f-ba6f-36889db66856XXXX
+                  operatingSystemImageId: ost://horsemem.i3m.upv.es/c99bc2af-76dd-498f-ba6f-36889db66856XXXX
                   secureBoot: False
                   measuredBoot: False
                   onSpot: False
@@ -126,8 +125,7 @@ System:
                   operatingSystemDistribution: Ubuntu
                   operatingSystemType: Linux
                   operatingSystemVersion: 20.04
-                  operatingSystemImageId: ost://horsemem.i3m.upv.es/
-                                c99bc2af-76dd-498f-ba6f-36889db66856 
+                  operatingSystemImageId: ost://horsemem.i3m.upv.es/c99bc2af-76dd-498f-ba6f-36889db66856
                   secureBoot: False
                   measuredBoot: False
                   onSpot: False
@@ -139,7 +137,7 @@ System:
                         computingUnits: 8
                         internalMemory: 64
                         SGXFlag: False
-             resource2:
+              resource2:
                   name: VM3
                   totalNodes: 5
                   description: c7g.2xlarge 
@@ -173,6 +171,6 @@ System:
                   cost: 0.0001561
                   memorySize: 8192
                   storageSize: 0.512
-	              region:  Milan
-	              idleTime: 600
+                  region:  Milan
+                  idleTime: 600
                   transitionCost:  0.02625

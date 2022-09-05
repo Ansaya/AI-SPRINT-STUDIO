@@ -4,8 +4,7 @@ Components:
         candidateExecutionLayers: [1]
         Containers:
              container1: 
-                image: registry.gitlab.polimi.it/ai-sprint/
-                                blurry-faces-onnx:tag
+                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx:tag
                 memorySize: 2048
                 computingUnits: 0.9
                 trustedExecution: False
@@ -14,8 +13,7 @@ Components:
                 GPURequirement: False
                 candidateExecutionResources: [RaspPi_NeuralStick]
              container2: 
-                image: registry.gitlab.polimi.it/ai-sprint/
-                              blurry-faces-onnx:tag
+                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx:tag
                 memorySize: 2048
                 computingUnits: 0.9
                 trustedExecution: False
@@ -28,8 +26,7 @@ Components:
            candidateExecutionLayers: [1]
            Containers:
              container1: 
-                image: registry.gitlab.polimi.it/ai-sprint/
-                            blurry-faces-onnx-partitionX-1:tag	
+                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx-partitionX-1:tag
                 memorySize: 1024
                 computingUnits: 0.9
                 trustedExecution: False
@@ -38,8 +35,7 @@ Components:
                 GPURequirement: False
                 candidateExecutionResources: [RaspPi_NeuralStick]
              container2: 
-                image: registry.gitlab.polimi.it/ai-sprint/
-                                blurry-faces-onnx-partitionX-1:tag 
+                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx-partitionX-1:tag
                 memorySize: 1024
                 computingUnits: 0.9
                 trustedExecution: False
@@ -52,8 +48,7 @@ Components:
             candidateExecutionLayers: [2]
             Containers:
              container1: 
-                image: registry.gitlab.polimi.it/ai-sprint/
-                                blurry-faces-onnx-partitionX-2:tag
+                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx-partitionX-2:tag
                 memorySize: 1024
                 computingUnits: 0.9
                 trustedExecution: False
@@ -66,8 +61,7 @@ Components:
         candidateExecutionLayers: [2,3,4]
         Containers:
              container1:
-                image: registry.gitlab.polimi.it/ai-sprint/
-                                    mask-detector:tag
+                image: registry.gitlab.polimi.it/ai-sprint/mask-detector:tag
                 memorySize: 4096
                 computingUnits: 0.9
                 trustedExecution: False
