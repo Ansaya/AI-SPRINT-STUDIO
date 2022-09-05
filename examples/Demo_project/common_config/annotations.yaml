@@ -1,4 +1,4 @@
-./ai-sprint_mask_detection_app/src/blurry-faces-onnx/main.py:
+/Demo_project/src/blurry-faces-onnx/main.py:
   component_name:
     name: blurry-faces-onnx
   device_constraints:
@@ -16,7 +16,7 @@
     filesystemShield: false
     networkShield: false
     trustedExecution: false
-./ai-sprint_mask_detection_app/src/mask-detector/main.py:
+/Demo_project/src/mask-detector/main.py:
   component_name:
     name: mask-detector
   device_constraints:

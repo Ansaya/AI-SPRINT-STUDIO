@@ -42,7 +42,7 @@ System:
                resource1:
                   name: VM1
                   totalNodes: 4
-                  description: Inhouse VM Type 1 UPV	
+                  description: Inhouse VM Type 1 UPV
                   cost: 0.675
                   memorySize: 8192
                   storageSize: 25

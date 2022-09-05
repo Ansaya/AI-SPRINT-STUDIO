@@ -1,5 +1,10 @@
 system:
-  name: ai-sprint_mask_detection_app
+  global_constraints:
+    global_constraint_1:
+      components_path:
+      - blurry-faces-onnx
+      - mask-detector
+      threshold: 40
   local_constraints:
     local_constraint_1:
       component_name: blurry-faces-onnx
@@ -7,9 +12,4 @@ system:
     local_constraint_2:
       component_name: mask-detector
       threshold: 10
-  global_constraints:
-    global_constraint_1:
-      components_path:
-        - blurry-faces-onnx
-        - mask-detector
-      threshold: 40
+  name: ai-sprint_mask_detection_app
