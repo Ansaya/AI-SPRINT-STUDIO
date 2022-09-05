@@ -1,5 +1,6 @@
 import os
 import shutil
+import yaml
 
 from .deployment_generator import DeploymentGenerator
 
@@ -45,6 +46,102 @@ class BaseDeploymentGenerator(DeploymentGenerator):
             symlink = os.path.join(
                 os.path.abspath(self.deployment_dir), 'src', component_name)
             os.symlink(source_design, symlink)
+
+        # Create production deployment #
+        # ---------------------------- #
+        candidate_resources_file = os.path.join(
+            self.application_dir, 'common_config', 'candidate_resources.yaml')
+        candidate_deployments_file = os.path.join(
+            self.application_dir, 'common_config', 'candidate_deployments.yaml')
+        production_deployment_file = os.path.join(
+            self.deployment_dir, 'production_deployment.yaml')
+        # Check candidate deployments and candidate resources exist
+        if not os.path.exists(candidate_deployments_file):
+            raise Exception(
+                "No 'candidate_deployments.yaml' file exists in '{}/common_config' folder".format(self.application_dir))
+        if not os.path.exists(candidate_resources_file):
+            raise Exception(
+                "No 'candidate_resources.yaml' file exists in '{}/common_config' folder".format(self.application_dir))
+        with open(candidate_deployments_file, 'r') as f:
+            candidate_deployments = yaml.safe_load(f)
+        with open(candidate_resources_file, 'r') as f:
+            candidate_resources = yaml.safe_load(f)
+        
+        production_deployment = {}
+        production_deployment['System'] = {}
+        production_deployment['System']['name'] = candidate_resources['System']['name']
+        
+        temp_dict = {}
+        selected_execution_layers = []
+        selected_resources = []
+        for component_name, component_dict in candidate_deployments['Components'].items():
+            if 'partitionX' in component_name:
+                continue
+        
+            temp_dict[component_name] = {}
+            temp_dict[component_name]['name'] = component_dict['name']
+        
+            # Select first execution layer
+            execution_layer = component_dict['candidateExecutionLayers'][0]
+            temp_dict[component_name]['executionLayer'] = execution_layer
+            selected_execution_layers.append(execution_layer)
+        
+            # Get first container and resource
+            container1 = candidate_deployments['Components'][component_name]['Containers']['container1'] 
+            temp_dict[component_name]['Containers'] = {'container1': {}}
+            for k, v in container1.items():
+                if k == 'candidateExecutionResources':
+                    k = 'selectedExecutionResources'
+                    v = v[0]
+                    selected_resources.append(v)
+                temp_dict[component_name][
+                    'Containers']['container1'][k] = v
+        
+        # Get only the reference to selected resources
+        net_temp_dict = {}
+        for k, v in candidate_resources['System']['NetworkDomains'].items():
+            subkeys = list(v.keys())
+            if not 'ComputationalLayers' in subkeys:
+                # Copy entire
+                net_temp_dict[k] = v
+            else:
+                # computational_layers = candidate_resources[
+                #     'System']['NetworkDomains']['ComputationalLayers']
+                net_temp_dict[k] = {}
+                for sk, sv in v.items():
+                    if sk != 'ComputationalLayers':
+                        net_temp_dict[k][sk] = sv
+                computational_layers = v['ComputationalLayers']
+                net_temp_dict[k]['ComputationalLayers'] = {}
+                at_least_one = False
+                for cl_k, cl_v in computational_layers.items():
+                    layer_number = int(cl_k.split('computationalLayer')[1])
+                    if layer_number in selected_execution_layers:
+                        at_least_one = True
+                        if not cl_k in net_temp_dict[k]['ComputationalLayers']:
+                            net_temp_dict[k]['ComputationalLayers'][cl_k] = {}
+                        for cl_v_k, cl_v_v in cl_v.items():
+                            if cl_v_k != 'Resources':
+                                net_temp_dict[k][
+                                    'ComputationalLayers'][cl_k][cl_v_k] = cl_v_v
+                            else:
+                                net_temp_dict[k][
+                                    'ComputationalLayers'][cl_k][cl_v_k] = {} 
+                                for rk, rv in cl_v_v.items():
+                                    name = rv['name']
+                                    if name in selected_resources:
+                                        net_temp_dict[k][
+                                            'ComputationalLayers'][cl_k][cl_v_k][rk] = rv
+                if not at_least_one:
+                    del net_temp_dict[k]
+        
+        production_deployment['System']['NetworkDomains'] = net_temp_dict 
+        production_deployment['System']['Components'] = temp_dict 
+        
+        # Save production_deployment.yaml 
+        with open(production_deployment_file, 'w') as f:
+            yaml.dump(production_deployment, f, sort_keys=False)
+
 
         # Initialize the symbolic link to the optimal deployment to point 
         # to the base deployment
