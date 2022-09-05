@@ -74,7 +74,7 @@ class SPACE4AIDPartitioner():
 
         return shape_info_dict_sorted
 
-    def onnx_model_split_first_smallest(self, sorted_nodes, onnx_model=None):
+    def onnx_model_split_first_smallest(self, sorted_nodes, onnx_model=None, number_of_partitions=1):
         ''' Find all the possible partitions of the ONNX model, 
             which are stored as designs in the designs folder of the AI-SPRINT application.
         '''
@@ -153,7 +153,7 @@ class SPACE4AIDPartitioner():
 
             partitioned_layers.append(layer)
 
-            if ln == 2:
+            if ln == number_of_partitions:
                 break
                 
         print("Model partitioned at layers: {}\n".format(partitioned_layers))
