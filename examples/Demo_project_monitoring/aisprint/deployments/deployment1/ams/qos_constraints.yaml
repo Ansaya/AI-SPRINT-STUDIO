@@ -1,0 +1,18 @@
+system:
+  name: Mask Detection Application
+  local_constraints:
+    local_constraint_1:
+      component_name: mask-detector
+      threshold: 10
+  global_constraints:
+    global_constraint_1:
+      components_path:
+        - blurry-faces-onnx_partition1_1
+        - blurry-faces-onnx_partition1_2
+      threshold: 20
+    global_constraint_2:
+      components_path:
+        - blurry-faces-onnx_partition1_1
+        - blurry-faces-onnx_partition1_2
+        - mask-detector
+      threshold: 40
