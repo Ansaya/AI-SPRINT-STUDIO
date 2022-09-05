@@ -29,7 +29,7 @@ def main(args):
     # --------------
 
     # load and preprocess image
-    orig_image = cv2.imread(input)
+    orig_image = cv2.imread(args['input'])
     image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
     # image = cv2.resize(image, (320, 240))
     image = cv2.resize(image, (640, 480))
@@ -135,7 +135,6 @@ if __name__ == '__main__':
 
     print("SCRIPT: Analyzing file '{}', saving the outputimages in '{}'".format(args['input'], args['output'])) 
 
-    # subprocess.run(['ffmpeg', '-i', '"$INPUT_FILE_PATH"', '-vf', 'fps=12/60', '"$OUTPUT_SUBFOLDER/img%d.jpg"'])
     subprocess.run(['ffmpeg', '-i', '{}'.format(orig_input), '-vf', 'fps=12/60', '{}/img%d.jpg'.format(orig_output)])
 
     frames = next(os.walk(os.path.join(orig_output)))[2]

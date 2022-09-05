@@ -80,7 +80,6 @@ if __name__ == '__main__':
 
     print("SCRIPT: Analyzing file '{}', saving the outputimages in '{}'".format(args['input'], args['output'])) 
 
-    # subprocess.run(['ffmpeg', '-i', '"$INPUT_FILE_PATH"', '-vf', 'fps=12/60', '"$OUTPUT_SUBFOLDER/img%d.jpg"'])
     subprocess.run(['ffmpeg', '-i', '{}'.format(orig_input), '-vf', 'fps=12/60', '{}/img%d.jpg'.format(orig_output)])
 
     frames = next(os.walk(os.path.join(orig_output)))[2]
