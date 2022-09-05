@@ -7,12 +7,17 @@ ARG GIT_USER=user
 ARG GIT_PASSWORD=pass
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir \
-    numpy==1.23.0 \
-    opencv-python==4.4.0.46 \
-    onnx==1.11.0 \
-    onnxruntime==1.11.1 \
-    protobuf==3.20.1
+#RUN pip install --no-cache-dir \
+#    numpy==1.23.0 \
+#    opencv-python==4.4.0.46 \
+#    onnx==1.11.0 \
+#    onnxruntime==1.11.1 \
+#    protobuf==3.20.1
+
+# Install AI-Sprint Lib:
+RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/ai-sprint-design.git && \
+    pip install ai-sprint-design && \
+    rm -rf ai-sprint-design
 
 # Install AI-Sprint monitoring Lib:
 # https://gitlab.polimi.it/ai-sprint/pymonitoring/
