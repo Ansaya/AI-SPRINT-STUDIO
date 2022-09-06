@@ -60,8 +60,6 @@ class ExecTimeManager(AnnotationManager):
 
         qos_constraints = {'system': {}}
         qos_constraints['system']['name'] = self.application_name
-        qos_constraints['system']['local_constraints'] = {}
-        qos_constraints['system']['global_constraints'] = {}
 
         local_constraint_idx = 0
         global_constraint_idx = 0
@@ -89,6 +87,8 @@ class ExecTimeManager(AnnotationManager):
 
                     # Save local constraint
                     local_constraint_idx += 1
+                    if not 'local_constraints' in qos_constraints['system']:
+                        qos_constraints['system']['local_constraints'] = {}
                     qos_constraints['system']['local_constraints'][
                         'local_constraint_'+str(local_constraint_idx)] = {
                             'component_name': dag_component, 'threshold': local_time_thr}
@@ -126,6 +126,8 @@ class ExecTimeManager(AnnotationManager):
 
                     # Save global constraint
                     global_constraint_idx += 1
+                    if not 'global_constraints' in qos_constraints['system']:
+                        qos_constraints['system']['global_constraints'] = {}
                     qos_constraints['system']['global_constraints'][
                         'global_constraint_'+str(global_constraint_idx)] =  {
                             'components_path': new_prev_components, 'threshold': global_time_thr}
@@ -173,6 +175,8 @@ class ExecTimeManager(AnnotationManager):
                     
                     # Save global constraint
                     global_constraint_idx += 1
+                    if not 'global_constraints' in qos_constraints['system']:
+                        qos_constraints['system']['global_constraints'] = {}
                     qos_constraints['system']['global_constraints'][
                         'global_constraint_'+str(global_constraint_idx)] = {
                             'components_path': new_prev_components, 'threshold': global_time_thr}
@@ -201,6 +205,8 @@ class ExecTimeManager(AnnotationManager):
                     
                     # Save global constraint
                     global_constraint_idx += 1
+                    if not 'global_constraints' in qos_constraints['system']:
+                        qos_constraints['system']['global_constraints'] = {}
                     qos_constraints['system']['global_constraints'][
                         'global_constraint_'+str(global_constraint_idx)] = {
                             'components_path': new_prev_components, 'threshold': global_time_thr}
