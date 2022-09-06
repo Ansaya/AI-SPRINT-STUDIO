@@ -32,13 +32,14 @@ def load_and_inference(onnx_file, input_dict):
     return_dict = {}
     outputs = onnx_model.graph.output
     # NOTE: the following supposes ordered results
-    for idx, output in outputs:
+    for idx, output in enumerate(outputs):
         return_dict[output.name] = result[idx]
 
-    if input_dict['keep']:
-        # Forward input tensors
-        for input in net_feed_input:
-            return_dict[input] = input_dict[input]
+    if 'keep' in input_dict and input_dict:
+        if input_dict['keep']:
+            # Forward input tensors
+            for input in net_feed_input:
+                return_dict[input] = input_dict[input]
     
     # Unused input must be forwarded
     for input in input_dict:
