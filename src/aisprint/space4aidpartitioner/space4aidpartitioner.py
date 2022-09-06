@@ -38,6 +38,24 @@ class SPACE4AIDPartitioner():
         for node in onnx_model.graph.node:
             if node_name in node.output:
                 return node.op_type
+    
+    def _node_is_activation(self, node):
+        # NOTE: add others?
+        if 'relu' in node:
+            return True
+        if 'tanh' in node:
+            return True
+        if 'sigmoid' in node:
+            return True
+        if 'affine' in node:
+            return True
+        if 'elu' in node:
+            return True
+        if 'softsign' in node:
+            return True
+        if 'softplus' in node:
+            return True
+        return False
 
     def _get_sorted_nodes(self, onnx_model):
         shape_info = onnx.shape_inference.infer_shapes(onnx_model)
@@ -52,8 +70,7 @@ class SPACE4AIDPartitioner():
             # Do not consider activation nodes TODO: to be double checked 
             node_type = self._get_node_type(
                 onnx_model=onnx_model, node_name=node_name)
-            # TODO: Why only relu?
-            if 'relu' in node_type:
+            if self._node_is_activation(node_type):
                 continue
             # Do not consider nodes with no shape 
             # (NOTE: this is only for this implementation)
