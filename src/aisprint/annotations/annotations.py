@@ -155,3 +155,21 @@ def annotation(annotation_dict):
             return value
         return wrapper_annotation
     return decorator_annotation
+
+# TODO: this is a temporary dummy implementation, check if it must be modified
+def security(trustedExecution=False, networkShield=False, filesystemShield=False):
+    ''' 'security' Annotation. 
+        Parameters:
+            trustedExecution (bool): 
+            networkShield (bool): 
+            filesystemShield (bool): 
+        Execution:
+            No additional functionality.
+    '''
+    def decorator_security(func):
+        @functools.wraps(func)
+        def wrapper_security(*args, **kwargs):
+            value = func(*args, **kwargs)
+            return value
+        return wrapper_security
+    return decorator_security

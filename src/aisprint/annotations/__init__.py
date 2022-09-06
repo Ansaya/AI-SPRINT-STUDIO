@@ -6,3 +6,4 @@ from .annotations import early_exit_model
 from .annotations import partitionable_model
 from .annotations import device_constraints
 from .annotations import expected_throughput
+from .annotations import security
