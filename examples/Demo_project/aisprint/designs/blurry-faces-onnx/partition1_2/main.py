@@ -37,14 +37,13 @@ def main(args):
     # ---------------
     
     # Result
-    confidences, boxes = return_dict
+    confidences, boxes = result
 
     # Forwarded
     orig_image = return_dict['orig_image']
     threshold = return_dict['threshold']
     classes = return_dict['classes']
     visualize_count = return_dict['visualize_count']
-    output = return_dict['output']
 
     # post process (NMS)
     boxes, labels, probs = postprocess(

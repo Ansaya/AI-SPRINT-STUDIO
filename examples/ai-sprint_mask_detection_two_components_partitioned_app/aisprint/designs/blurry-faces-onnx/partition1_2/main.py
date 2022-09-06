@@ -28,7 +28,7 @@ from aisprint.onnx_inference import load_and_inference
 def main(args):
     with open(args['input'], 'rb') as f:
         input_dict = pickle.load(f)
-    result_dict, result = load_and_inference(args['onnx_file'], input_dict)
+    return_dict, result = load_and_inference(args['onnx_file'], input_dict)
 
 
     # ------------------
@@ -37,7 +37,7 @@ def main(args):
     # ---------------
     
     # Result
-    confidences, boxes = result 
+    confidences, boxes = result
 
     # Forwarded
     orig_image = return_dict['orig_image']

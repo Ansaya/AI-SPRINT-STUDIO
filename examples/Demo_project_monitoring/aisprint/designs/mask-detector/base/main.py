@@ -6,6 +6,7 @@ import cv2
 import os
 
 from aisprint.annotations import component_name, exec_time, device_constraints, security
+from aisprint.monitoring import report_metric
 
 @component_name(name='mask-detector')
 @exec_time(local_time_thr=10, global_time_thr=40, prev_components=['blurry-faces-onnx'])
@@ -92,6 +93,14 @@ def main(args):
 	cv2.putText(image,text, (W-300, int(border_size-50)), cv2.FONT_HERSHEY_SIMPLEX,0.8,border_text_color, 2)
 	ratio=nomask_count/(mask_count+nomask_count)
 
+	# Report metric for monitorin
+	# - metric name: 'masks'
+	# - 3 fields: 'no_masks_count', 'masks_count', 'ratio'
+	metric_dict = {'no_masks_count': nomask_count,
+				   'masks_count': mask_count,
+				   'ratio': ratio}
+	report_metric('masks', metric_dict)
+
 	if ratio>=0.1 and nomask_count>=3:
 		text = "Danger !"
 		cv2.putText(image,text, (W-200, int(border_size-50)), cv2.FONT_HERSHEY_SIMPLEX,0.8,[26,13,247], 2)
@@ -134,7 +143,7 @@ if __name__ == '__main__':
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-i", "--input", required=True, help="path to input image")
 	ap.add_argument("-o", "--output",help="path to output folder")
-	ap.add_argument("-y", "--yolo", default="/opt/mask-detector/cfg", help="base path to YOLO cfg directory")
+	ap.add_argument("-y", "--yolo", default="cfg", help="base path to YOLO cfg directory")
 	ap.add_argument("-c", "--confidence", type=float, default=0.2, help="minimum probability to filter weak detections")
 	ap.add_argument("-t", "--threshold", type=float, default=0.1, help="threshold when applying non-max suppression")
 	args = vars(ap.parse_args())
