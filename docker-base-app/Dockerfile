@@ -26,6 +26,7 @@ RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/ai-spri
 
 RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/pymonitoring.git && \
     cd pymonitoring && \
+    sed -i '/python_requires/d' setup.cfg && \
     pip install . && \
     cd .. && \
     rm -rf pymonitoring
