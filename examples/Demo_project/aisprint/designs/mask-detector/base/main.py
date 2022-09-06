@@ -8,7 +8,7 @@ import os
 from aisprint.annotations import component_name, exec_time, device_constraints, security
 
 @component_name(name='mask-detector')
-@exec_time(local_time_thr=10, global_time_thr=40, prev_components=['blurry-faces-onnx'])
+@exec_time(local_time_thr=10)
 @device_constraints(ram=1024, vram=2048, use_gpu_for=['dnn'])
 @security(trustedExecution=False, networkShield=False, filesystemShield=False)
 def main(args):
