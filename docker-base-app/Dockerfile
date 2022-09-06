@@ -16,12 +16,16 @@ RUN pip install --upgrade pip
 
 # Install AI-Sprint Lib:
 RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/ai-sprint-design.git && \
-    pip install ai-sprint-design && \
+    cd ai-sprint-design && \
+    pip install . && \
+    cd ..  && \
     rm -rf ai-sprint-design
 
 # Install AI-Sprint monitoring Lib:
 # https://gitlab.polimi.it/ai-sprint/pymonitoring/
 
 RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/pymonitoring.git && \
-    pip install pymonitoring && \
+    cd pymonitoring && \
+    pip install . && \
+    cd .. && \
     rm -rf pymonitoring
