@@ -6,6 +6,10 @@ LABEL description="Base container image for the AI-SPRINT use cases."
 ARG GIT_USER=user
 ARG GIT_PASSWORD=pass
 
+RUN apt update && \
+    apt install -y --no-install-recommends uuid-runtime && \
+    apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && rm -rf ~/.cache/
+
 RUN pip install --upgrade pip
 #RUN pip install --no-cache-dir \
 #    numpy==1.23.0 \
@@ -22,11 +26,8 @@ RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/ai-spri
     rm -rf ai-sprint-design
 
 # Install AI-Sprint monitoring Lib:
-# https://gitlab.polimi.it/ai-sprint/pymonitoring/
-
 RUN git clone https://$GIT_USER:$GIT_PASSWORD@gitlab.polimi.it/ai-sprint/pymonitoring.git && \
     cd pymonitoring && \
-    sed -i '/python_requires/d' setup.cfg && \
     pip install . && \
     cd .. && \
     rm -rf pymonitoring
