@@ -1,7 +1,19 @@
 import os
 import functools
 import time
+import datetime
 from ..monitoring import report_execution_time
+
+def get_start_time_from_event(event_info, default=0):
+    '''Helper function to extract the eventTime from the Event JSON.'''
+    try:
+        event_time = event_info.get("Records", [{}])[0].get("eventTime", '')
+        if event_time:
+            return time.mktime(datetime.datetime.strptime(event_time, "%Y-%m-%dT%H:%M:%S.%fZ").timetuple())
+        else:
+            return default
+    except:
+        return default
 
 def exec_time(local_time_thr=None, global_time_thr=None, prev_components=None):
     ''' 'exec_time' QoS Annotation. 
@@ -29,7 +41,7 @@ def exec_time(local_time_thr=None, global_time_thr=None, prev_components=None):
             kci = os.getenv('KCI')
             resource_id = os.getenv('RESOURCE_ID')
             component_name = os.getenv('COMPONENT_NAME')
-            start_time_job = os.getenv('EVENT')
+            start_time_job = get_start_time_from_event(os.getenv('EVENT', {}), start_time_func)
             report_execution_time(uuid, kci, resource_id, component_name, 
                                   start_time_job, start_time_func, end_time_func)
             return value
@@ -147,7 +159,7 @@ def annotation(annotation_dict):
                 kci = os.getenv('KCI')
                 resource_id = os.getenv('RESOURCE_ID')
                 component_name = os.getenv('COMPONENT_NAME')
-                start_time_job = os.getenv('EVENT')
+                start_time_job = get_start_time_from_event(os.getenv('EVENT', {}), start_time_func)
                 report_execution_time(uuid, kci, resource_id, component_name, 
                                       start_time_job, start_time_func, end_time_func)
                 return value
