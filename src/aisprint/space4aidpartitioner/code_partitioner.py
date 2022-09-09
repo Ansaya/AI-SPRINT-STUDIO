@@ -50,12 +50,14 @@ class CodePartitioner():
                 if item['component_name']['name'] == component_name:
                     if 'exec_time' in item:
                         has_exec_time = True
+                    orig_onnx_file = item['partitionable_model']['onnx_file']
             
             # 1st half
             first_half = [p for p in partition_dirs if re.search("^partition[1-9]+_1", p)]
             print(first_half)
             self._generate_first_half_code(
-                component_name=component_name, first_half=first_half, has_exec_time=has_exec_time)
+                component_name=component_name, first_half=first_half, 
+                has_exec_time=has_exec_time, orig_onnx_file=orig_onnx_file)
             
             # 2nd half
             second_half = [p for p in partition_dirs if re.search("^partition[1-9]+_2", p)]
@@ -80,7 +82,8 @@ class CodePartitioner():
                             os.path.join(self.designs_dir, component_name, h, file))
             print("DONE.\n")
         
-    def _generate_first_half_code(self, component_name, first_half, has_exec_time):
+    def _generate_first_half_code(self, component_name, first_half, 
+                                  has_exec_time, orig_onnx_file):
 
         base_design = os.path.join(self.designs_dir, component_name, 'base')
         # Get main script
@@ -136,11 +139,19 @@ class CodePartitioner():
         gen_script += [new_inference_str]
         gen_script += [save_str]
         gen_script += main_code[name_line:]
-        
+
+
         for fh in first_half:
             partition_dir = os.path.join(self.designs_dir, component_name, fh)
+            idx_onnx_line = 0
+            for idx, line in enumerate(gen_script):
+                if '--onnx_file' in line:
+                    new_onnx_file_line = line.replace(
+                        '{}'.format(orig_onnx_file), '{}.onnx'.format(fh))
+                    idx_onnx_line = idx
+            new_gen_script = gen_script[:idx_onnx_line] + [new_onnx_file_line] + gen_script[idx_onnx_line+1:]
             with open(os.path.join(partition_dir, 'main.py'), 'w') as f:
-                f.writelines(gen_script)
+                f.writelines(new_gen_script)
 
     def _generate_second_half_code(self, component_name, second_half, has_exec_time):
 
@@ -206,14 +217,15 @@ class CodePartitioner():
         # Add new if __name__ == '__main__'
         gen_script += ["\n"]
         gen_script += ["if __name__ == '__main__':\n"]
-        gen_script += ["    " + "parser.argparse.ArgumentParser()\n"]
+        gen_script += ["    " + "parser = argparse.ArgumentParser()\n"]
         gen_script += ["    " + "parser.add_argument('-i', '--input', required=True, help='path to input file')\n"]
         gen_script += ["    " + "parser.add_argument('-o', '--output', help='path to output directory')\n"]
-        gen_script += ["    " + "parser.add_argument('-y', '--onnx_file', help='complete path to tge ONNX model')\n"]
         gen_script += ["    " + "args = vars(parser.parse_args())\n"]
         gen_script += ["    " + "main(args)"]
         
         for sh in second_half:
             partition_dir = os.path.join(self.designs_dir, component_name, sh)
+            new_onnx_line = ["    " + "parser.add_argument('-y', '--onnx_file', default='onnx/{}.onnx', help='complete path to tge ONNX model')\n".format(sh)]
+            new_gen_script = gen_script[:-2] + new_onnx_line + gen_script[-2:]
             with open(os.path.join(partition_dir, 'main.py'), 'w') as f:
-                f.writelines(gen_script)
+                f.writelines(new_gen_script)
