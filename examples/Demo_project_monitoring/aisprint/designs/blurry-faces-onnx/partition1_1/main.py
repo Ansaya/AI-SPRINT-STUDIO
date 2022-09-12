@@ -66,8 +66,8 @@ if __name__ == '__main__':
     # construct the argument parser and parse the arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="path to input video")
-    parser.add_argument("-o", "--output", help="path to output directory")
-    parser.add_argument("-y", "--onnx_file", default="onnx/version-RFB-640.onnx", help="complete path to tge ONNX model")
+    parser.add_argument("-o", "--output", help="path to output images")
+    parser.add_argument("-y", "--onnx_file", default="onnx/partition1_1.onnx", help="complete path to tge ONNX model")
     parser.add_argument("-t", "--threshold", type=float, default=0.7, help="threshold when applying non-max suppression")
     parser.add_argument('--visualize_count', default=False, action='store_true', help="whether to visualize the count of the detected faces on the image")
     args = vars(parser.parse_args())
@@ -79,13 +79,16 @@ if __name__ == '__main__':
 
     print("SCRIPT: Analyzing file '{}', saving the outputimages in '{}'".format(args['input'], args['output'])) 
 
-    subprocess.run(['ffmpeg', '-i', '{}'.format(orig_input), '-vf', 'fps=12/60', '{}/img%d.jpg'.format(orig_output)])
+    output_dir = os.path.dirname(orig_output)
+    output_prefix = os.path.splitext(os.path.basename(orig_output))[0]
+    output_name = os.path.join(output_dir, "{}-%d.jpg".format(output_prefix))
+    subprocess.run(['ffmpeg', '-i', '{}'.format(orig_input), '-vf', 'fps=12/60', output_name])
 
-    frames = next(os.walk(os.path.join(orig_output)))[2]
+    frames = next(os.walk(os.path.join(output_dir)))[2]
     frames = [frame for frame in frames if '.jpg' in frame]
 
     for frame in frames:
-        args['input'] = os.path.join(orig_output, frame)
-        args['output'] = os.path.join(orig_output, frame)
+        args['input'] = os.path.join(output_dir, frame)
+        args['output'] = os.path.join(output_dir, frame)
 
         main(args)

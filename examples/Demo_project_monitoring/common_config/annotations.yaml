@@ -25,10 +25,7 @@
     - dnn
     vram: 2048
   exec_time:
-    global_time_thr: 40
     local_time_thr: 10
-    prev_components:
-    - blurry-faces-onnx
   security:
     filesystemShield: false
     networkShield: false

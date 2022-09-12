@@ -1,10 +1,5 @@
 system:
-  global_constraints:
-    global_constraint_1:
-      components_path:
-      - blurry-faces-onnx
-      - mask-detector
-      threshold: 40
+  global_constraints: {}
   local_constraints:
     local_constraint_1:
       component_name: blurry-faces-onnx
