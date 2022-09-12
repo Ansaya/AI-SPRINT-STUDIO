@@ -2,7 +2,7 @@ import click
 import pkg_resources
 from cookiecutter.main import cookiecutter
 
-from ..design import run_design 
+from ..design import run_design
 
 @click.group()
 def aisprint_cli():
@@ -27,8 +27,17 @@ def design(application_dir):
     run_design(application_dir)
     print("DONE. Application designs have been generated.") 
 
+@click.command()
+@click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
+def profile(application_dir):
+    print("Starting profiling...") 
+    from ..oscarpcoordinator.coordinator import main  # local import to save time, the ml library takes a while to import
+    main(application_dir)    
+    print("DONE. Application designs have been generated.") 
+
 aisprint_cli.add_command(design)
 aisprint_cli.add_command(new_application)
+aisprint_cli.add_command(profile)
 
 if __name__ == '__main__':
     aisprint_cli()

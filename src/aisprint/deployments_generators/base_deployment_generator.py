@@ -29,8 +29,8 @@ class BaseDeploymentGenerator(DeploymentGenerator):
                         os.path.join(self.deployment_dir, 'space4ai-d'))
         shutil.copytree(os.path.join(self.application_dir, 'oscar'), 
                         os.path.join(self.deployment_dir, 'oscar'))
-        shutil.copytree(os.path.join(self.application_dir, 'oscar-p'), 
-                        os.path.join(self.deployment_dir, 'oscar-p'))
+        shutil.copytree(os.path.join(self.application_dir, 'oscarp'), 
+                        os.path.join(self.deployment_dir, 'oscarp'))
         shutil.copytree(os.path.join(self.application_dir, 'pycompss'), 
                         os.path.join(self.deployment_dir, 'pycompss'))
         shutil.copytree(os.path.join(self.application_dir, 'im'), 
