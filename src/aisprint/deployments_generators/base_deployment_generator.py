@@ -147,8 +147,7 @@ class BaseDeploymentGenerator(DeploymentGenerator):
 
         # Initialize the symbolic link to the optimal deployment to point 
         # to the base deployment
-        source_deployment = os.path.join(
-            os.path.abspath(self.application_dir), 'aisprint', 'deployments', deployment_name)
+        source_deployment = './' + deployment_name
         current_design_symlink = os.path.join(
             os.path.abspath(self.application_dir), 'aisprint', 'deployments', 'optimal_deployment')
         os.symlink(source_deployment, current_design_symlink)
