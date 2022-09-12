@@ -22,11 +22,11 @@ Components:
                 GPURequirement: False
                 candidateExecutionResources: [VM1]
       component1_partitionX_1:
-           name: blurry-faces-onnx-partitionX-1
+           name: blurry-faces-onnx_partitionX_1
            candidateExecutionLayers: [1]
            Containers:
              container1: 
-                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx-partitionX-1:tag
+                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx_partitionX_1:tag
                 memorySize: 1024
                 computingUnits: 0.9
                 trustedExecution: False
@@ -35,11 +35,11 @@ Components:
                 GPURequirement: False
                 candidateExecutionResources: [RaspPi]
       component1_partitionX_2:
-            name: blurry-faces-onnx-partitionX-2
+            name: blurry-faces-onnx_partitionX_2
             candidateExecutionLayers: [2]
             Containers:
              container1: 
-                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx-partitionX-2:tag
+                image: registry.gitlab.polimi.it/ai-sprint/blurry-faces-onnx_partitionX_2:tag
                 memorySize: 1024
                 computingUnits: 0.9
                 trustedExecution: False
