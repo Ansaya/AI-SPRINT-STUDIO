@@ -10,8 +10,13 @@ def make_oscar_p_input_file(deployment, testing_components, resources, run_param
     clusters_dict = {}
 
     i = service_number
-    repetitions = run_parameters["run"]["repetitions"]
-    final_processing = run_parameters["run"]["final_processing"]
+
+    if is_single_service:
+        run_parameters["input_files"]["storage_bucket"] = "bucket" + str(i)
+        run_parameters["input_files"]["filename"] = None
+    else:
+        run_parameters["run"]["repetitions"] = 1
+        run_parameters["run"]["final_processing"] = False
 
     for d in deployment:
         name = testing_components[d]["name"]
@@ -20,13 +25,9 @@ def make_oscar_p_input_file(deployment, testing_components, resources, run_param
         if is_single_service:
             input_bucket = "temp" + str(i)
             output_bucket = "trash" + str(i)
-            run_parameters["input_files"]["storage_bucket"] = "bucket" + str(i)
-            run_parameters["input_files"]["filename"] = None
         else:
             input_bucket = "bucket" + str(i)
             output_bucket = "bucket" + str(i + 1)
-            run_parameters["run"]["repetitions"] = 1
-            run_parameters["run"]["final_processing"] = False
 
         services.append({name: {
             "cluster": r,
@@ -57,9 +58,6 @@ def make_oscar_p_input_file(deployment, testing_components, resources, run_param
 
     with open("input.yaml", "w") as file:
         yaml.dump(oscar_p_input_file, file, sort_keys=False)
-
-    run_parameters["run"]["repetitions"] = repetitions
-    run_parameters["run"]["final_processing"] = final_processing
 
     # input(">_")
 

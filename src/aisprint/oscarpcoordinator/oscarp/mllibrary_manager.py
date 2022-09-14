@@ -1,6 +1,8 @@
 import os
 import configparser
 
+import executables
+
 from termcolor import colored
 
 from utils import auto_mkdir
@@ -52,12 +54,12 @@ def train_and_predict(csvs_dir, workdir, run_name):
     current_model = run_name
 
     # with SFS
-    config_file = "aMLLibrary/aMLLibrary-config-SFS.ini"
+    config_file = executables.amllibrary_sfs
     output_dir_sfs = workdir + current_model + "_model_SFS"
     train_models(config_file, training_set, output_dir_sfs)
 
     # without SFS
-    config_file = "aMLLibrary/aMLLibrary-config-noSFS.ini"
+    config_file = executables.amllibrary_no_sfs
     output_dir_no_sfs = workdir + current_model + "_model_noSFS"
     train_models(config_file, training_set, output_dir_no_sfs)
 

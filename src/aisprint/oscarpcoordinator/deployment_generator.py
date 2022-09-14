@@ -110,14 +110,19 @@ def reorder_deployments(deployments, resources):
     return reordered_deployments
 
 
-def get_single_services_from_deployment(deployment):
+def get_single_services_from_deployment(deployment, tested_services):
 
     services_in_deployment = []
+    services_to_test = []
 
     for c in deployment:
         services_in_deployment.append([c])
+        if [c] not in tested_services:
+            services_to_test.append([c])
 
-    return services_in_deployment
+    tested_services += services_to_test
+
+    return services_in_deployment, services_to_test, tested_services
 
 
 def make_deployments_summary(campaign_dir, deployments):

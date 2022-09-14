@@ -20,21 +20,21 @@ def get_resources(work_dir):
             "max_memory_mb": 8192
         },
         "VM2": {
-            "oscarcli_alias": "oscar-aws",
-            "minio_alias": "minio-aws",
-            "ssh": None,
+            "oscarcli_alias": "oscar-vm",
+            "minio_alias": "minio-vm",
+            "ssh": "aisprint@158.42.105.149/10022",
             "total_nodes": 8,
             "max_cpu_cores": 4.0,
             "max_memory_mb": 8192
         },
         "VM3": {
-            "oscarcli_alias": "oscar-aws",
-            "minio_alias": "minio-aws",
-            "ssh": None,
+            "oscarcli_alias": "oscar-vm",
+            "minio_alias": "minio-vm",
+            "ssh": "aisprint@158.42.105.149/10022",
             "total_nodes": 8,
             "max_cpu_cores": 4.0,
             "max_memory_mb": 8192
-        }
+        },
     }
     return resources
 
@@ -70,7 +70,7 @@ def get_components_and_images(work_dir):
 
         else:
             target, matches = get_correct_partition(work_dir, component)
-            target = "partition" + target
+            target_string = "partition" + target
 
             for m in matches:
                 for container_key in component["Containers"]:
@@ -79,14 +79,14 @@ def get_components_and_images(work_dir):
                     resources = container["candidateExecutionResources"]
                     component_resources += resources
 
-                    m = "partition" + str(m)
+                    match_string = "partition" + str(m)
 
                     for r in resources:
                         full_id = short_id.replace(target, m) + "@" + r  # C1@VM1
                         images[full_id] = image.replace(target, m)
 
                 components[component_key.replace(target, m)] = {
-                    "name": name.replace(target, m),
+                    "name": name.replace(target_string, match_string),
                     "resources": component_resources  # todo duplicated items?
                 }
 
@@ -104,8 +104,6 @@ def get_correct_partition(work_dir, component):
     for p in partitions:
         if p[-1] == partition[-1]:
             matches.append(p[-3])
-
-    print(matches)
 
     return partition[0], matches
 

@@ -124,7 +124,8 @@ def generate_fdl_configuration(services, clusters):
             """
 
             oscarcli_alias = current_service["oscarcli_alias"]
-            script_path = "bash-scripts/" + current_service["name"] + ".sh"
+            # script_path = "bash-scripts/" + current_service["name"] + ".sh"
+            script_path = executables.script
 
             fdl_service = {oscarcli_alias: {
                 "cpu": current_service["cpu"],

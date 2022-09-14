@@ -4,6 +4,8 @@ import pickle
 import os
 from tqdm import tqdm
 
+import executables
+
 from termcolor import colored
 from datetime import datetime, timedelta
 
@@ -12,8 +14,6 @@ from cluster_manager import set_default_oscar_cluster, get_active_cluster
 from utils import configure_ssh_client, get_ssh_output, get_command_output_wrapped, show_debug_info
 
 global run_name
-
-oscar_cli = "oscarp/oscar-cli "
 
 
 # todo must comment more everywhere
@@ -45,7 +45,7 @@ def get_timed_jobs_list(service, client, cluster):
 
     set_default_oscar_cluster(cluster)
 
-    command = oscar_cli + "service logs list " + service
+    command = executables.oscar_cli.get_command("service logs list " + service)
     logs_list = get_command_output_wrapped(command)
 
     if logs_list:
@@ -94,7 +94,8 @@ def get_timed_jobs_list(service, client, cluster):
 
 # retrieve the content of the log of a given job
 def get_oscar_log(service_name, job_name):
-    command = oscar_cli + "service logs get " + service_name + " " + job_name
+    # command = oscar_cli + "service logs get " + service_name + " " + job_name
+    command = executables.oscar_cli.get_command("service logs get " + service_name + " " + job_name)
     output = get_command_output_wrapped(command)
 
     # date_format_precise = "%d-%m-%Y %H:%M:%S.%f"

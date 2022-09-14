@@ -96,10 +96,10 @@ def configure_ssh_client(cluster):
 
 
 def get_private_key():
-    with open(files_and_executables.ssh, "r") as file:
+    with open(executables.ssh, "r") as file:
         data = json.load(file)
 
-    private_key = RSAKey.from_private_key_file(files_and_executables.ssh_key, data["password"])
+    private_key = RSAKey.from_private_key_file(executables.ssh_key, data["password"])
     # private_key = RSAKey.from_private_key_file(data["path_to_key"], data["password"])
     return private_key
 

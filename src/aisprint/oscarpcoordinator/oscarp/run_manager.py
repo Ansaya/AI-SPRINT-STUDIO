@@ -3,16 +3,14 @@
 import time
 import numpy as np
 
+import executables
+
 from termcolor import colored
 from tqdm import tqdm
 
 from input_file_processing import get_workflow_input
 from cluster_manager import set_default_oscar_cluster_from_alias
 from utils import get_command_output_wrapped, show_error, auto_mkdir
-
-
-oscar_cli = "oscarp/oscar-cli "
-mc = "oscarp/mc "
 
 
 # wait between the upload of two files, to emulate arrival rate
@@ -80,7 +78,8 @@ def move_input_files_to_dead_start_bucket(service):
 def move_file_between_buckets(origin_file, origin_bucket, destination_file, destination_bucket):
     origin = origin_bucket + "/" + origin_file
     destination = destination_bucket + "/" + destination_file
-    command = mc + "cp " + origin + " " + destination
+    # command = mc + "cp " + origin + " " + destination
+    command = executables.mc.get_command("cp " + origin + " " + destination)
     get_command_output_wrapped(command)
     return
 
@@ -91,7 +90,8 @@ def duplicate_bucket(service, source_bucket, destination_bucket):
     source = minio_alias + "/" + source_bucket
     destination = minio_alias + "/" + destination_bucket
     set_default_oscar_cluster_from_alias(service["oscarcli_alias"])
-    command = mc + "cp " + source + "/ " + destination + " -r"
+    # command = mc + "cp " + source + "/ " + destination + " -r"
+    command = executables.mc.get_command("cp " + source + "/ " + destination + " -r")
     get_command_output_wrapped(command)
     print(colored("Done!", "green"))
     return
@@ -102,7 +102,8 @@ def get_jobs_list(service_name, oscarcli_alias):
 
     set_default_oscar_cluster_from_alias(oscarcli_alias)
 
-    command = oscar_cli + "service logs list " + service_name
+    # command = oscar_cli + "service logs list " + service_name
+    command = executables.oscar_cli.get_command("service logs list " + service_name)
     logs_list = get_command_output_wrapped(command)
 
     if logs_list:

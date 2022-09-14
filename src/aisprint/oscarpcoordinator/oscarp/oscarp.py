@@ -22,10 +22,10 @@ global run_dir, clusters, runs, run, simple_services, repetitions, run_name, cur
 
 
 def prepare_clusters(clean_buckets):
-    # remove_all_services(clusters)
-    # if clean_buckets:
-    #    remove_all_buckets(clusters)
-    # apply_cluster_configuration(run, clusters)
+    remove_all_services(clusters)
+    if clean_buckets:
+        remove_all_buckets(clusters)
+    apply_cluster_configuration(run, clusters)
     generate_fdl_configuration(run["services"], clusters)
     apply_fdl_configuration_wrapped(run["services"])
 
@@ -125,16 +125,16 @@ def manage_campaign_dir():
     return n
 
 
-def main(work_dir="./", clean_buckets=False):
+def main(clean_buckets=False):
     global clusters, runs, simple_services, run_name, current_deployment_dir, run_dir, repetitions
     clusters = get_clusters_info()
     base, runs = run_scheduler()
     simple_services = get_simple_services(runs[0]["services"])
     campaign_dir, run_name, repetitions, cooldown = get_run_info()
 
-    campaign_dir = work_dir + campaign_dir
-    auto_mkdir('/'.join(campaign_dir.split("/")[:-1]))  # sneaky cheaty but my brain hurts so I'm excused
-    auto_mkdir(campaign_dir)
+    # campaign_dir = work_dir + campaign_dir
+    # auto_mkdir('/'.join(campaign_dir.split("/")[:-1]))  # sneaky cheaty but my brain hurts so I'm excused
+    # auto_mkdir(campaign_dir)
     current_deployment_dir = campaign_dir + "/" + run_name
     run_dir = current_deployment_dir + "/runs"
 
@@ -144,8 +144,6 @@ def main(work_dir="./", clean_buckets=False):
 
     show_workflow(simple_services)
     show_runs(base, repetitions, clusters, current_deployment_dir)
-
-    executables.init(work_dir + ".executables/")
 
     # run = runs[0]
     # test()
