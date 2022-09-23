@@ -32,12 +32,20 @@ def design(application_dir):
 def profile(application_dir):
     print("Starting profiling...") 
     from ..oscarpcoordinator.coordinator import main  # local import to save time, the ml library takes a while to import
-    main(application_dir)    
-    print("DONE. Application designs have been generated.") 
+    main(application_dir)
+
+
+@click.command()
+@click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
+def space4aid(application_dir):
+    print("Starting SPACE4AI-D...")
+    from ..space4aid.Run_and_Evaluate_integrate_AISPRINT import main  # local import to save time, the ml library takes a while to import
+    main(application_dir)
 
 aisprint_cli.add_command(design)
 aisprint_cli.add_command(new_application)
 aisprint_cli.add_command(profile)
+aisprint_cli.add_command(space4aid)
 
 if __name__ == '__main__':
     aisprint_cli()
