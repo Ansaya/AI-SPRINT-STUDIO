@@ -91,6 +91,30 @@ class SPACE4AIDPartitioner():
 
         return shape_info_dict_sorted
 
+    def _get_true_input(self, onnx_model):
+        '''
+        Get the list of TRUE inputs of the ONNX model passed as argument.
+        The reason for this is that sometimes "onnx.load" interprets some of the static initializers
+        (such as weights and biases) as inputs, therefore showing a large list of inputs and misleading for instance
+        the fuctions used for splitting.
+        :param onnx_model: the already imported ONNX Model
+        :returns: a list of the true inputs
+        '''
+        input_names = []
+
+        initializers = [node.name for node in onnx_model.graph.initializer]
+
+        # Iterate all inputs and check if they are valid
+        for i in range(len(onnx_model.graph.input)):
+            node_name = onnx_model.graph.input[i].name
+            # Check if input is not an initializer, if so ignore it
+            if node_name in initializers:
+                continue
+            else:
+                input_names.append(node_name)
+
+        return input_names
+
     def onnx_model_split_first_smallest(self, sorted_nodes, onnx_model=None, number_of_partitions=1):
         ''' Find all the possible partitions of the ONNX model, 
             which are stored as designs in the designs folder of the AI-SPRINT application.
@@ -148,11 +172,8 @@ class SPACE4AIDPartitioner():
             
             # Split and save the first half of the current partition 
             # ------------------------------------------------------
-            input_names = []
+            input_names = self._get_true_input(onnx_model) 
             
-            for i in range(len(onnx_model.graph.input)):
-                input_names.append(onnx_model.graph.input[i].name)
-
             output_names = [layer]
 
             onnx_folder = os.path.join(partition1_dir, 'onnx')
