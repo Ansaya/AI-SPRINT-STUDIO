@@ -4,10 +4,8 @@ components:
     - base
     - partition1_2
     - partition1_1
-    - partition2_2
-    - partition2_1
   mask-detector-onnx:
     partitions:
     - base
-    - partition2_2
-    - partition2_1
+    - partition1_2
+    - partition1_1

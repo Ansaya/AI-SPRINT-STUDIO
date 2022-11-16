@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--image", required=True, help="path to input image")
     parser.add_argument("-o", "--output",help="path to output image")
-    parser.add_argument("-y", "--onnx_file", default="/opt/mask-detector/onnx_model/yolov3-tiny.onnx", help="complete path to tge ONNX model")
+    parser.add_argument("-y", "--onnx_file", default="/opt/mask-detector/onnx_model/partition1_1.onnx", help="complete path to tge ONNX model")
     parser.add_argument("-cfg", "--cfg_path", default="/opt/mask-detector/cfg", help="base path to the obj.names specifying classes names")
     parser.add_argument("-c", "--confidence", type=float, default=0.2, help="minimum probability to filter weak detections")
     parser.add_argument("-t", "--threshold", type=float, default=0.1, help="threshold when applying non-max suppression")

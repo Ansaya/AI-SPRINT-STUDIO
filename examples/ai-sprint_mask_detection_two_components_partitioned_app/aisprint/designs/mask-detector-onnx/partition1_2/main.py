@@ -23,7 +23,7 @@ from aisprint.onnx_inference import load_and_inference
 def main(args):
 	with open(args['input'], 'rb') as f:
 	    input_dict = pickle.load(f)
-	result_dict, result = load_and_inference(args['onnx_file'], input_dict)
+	return_dict, result = load_and_inference(args['onnx_file'], input_dict)
 
 
 	# ------------------
@@ -136,9 +136,9 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser.argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', required=True, help='path to input file')
     parser.add_argument('-o', '--output', help='path to output directory')
-    parser.add_argument('-y', '--onnx_file', help='complete path to tge ONNX model')
+    parser.add_argument('-y', '--onnx_file', default='onnx/partition1_2.onnx', help='complete path to tge ONNX model')
     args = vars(parser.parse_args())
     main(args)
