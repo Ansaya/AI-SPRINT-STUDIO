@@ -99,4 +99,6 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', help='path to output directory')
     parser.add_argument('-y', '--onnx_file', default='onnx/partition1_2.onnx', help='complete path to tge ONNX model')
     args = vars(parser.parse_args())
+    input_filename = args['input'].split('/')[-1]
+    args['output'] = os.path.join(os.path.dirname(args['output']), input_filename)
     main(args)

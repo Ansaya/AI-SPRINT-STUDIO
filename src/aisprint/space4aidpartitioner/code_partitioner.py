@@ -221,11 +221,13 @@ class CodePartitioner():
         gen_script += ["    " + "parser.add_argument('-i', '--input', required=True, help='path to input file')\n"]
         gen_script += ["    " + "parser.add_argument('-o', '--output', help='path to output directory')\n"]
         gen_script += ["    " + "args = vars(parser.parse_args())\n"]
+        gen_script += ["    " + "input_filename = args['input'].split('/')[-1]\n"]
+        gen_script += ["    " + "args['output'] = os.path.join(os.path.dirname(args['output']), input_filename)\n"]
         gen_script += ["    " + "main(args)"]
         
         for sh in second_half:
             partition_dir = os.path.join(self.designs_dir, component_name, sh)
             new_onnx_line = ["    " + "parser.add_argument('-y', '--onnx_file', default='onnx/{}.onnx', help='complete path to tge ONNX model')\n".format(sh)]
-            new_gen_script = gen_script[:-2] + new_onnx_line + gen_script[-2:]
+            new_gen_script = gen_script[:-4] + new_onnx_line + gen_script[-4:]
             with open(os.path.join(partition_dir, 'main.py'), 'w') as f:
                 f.writelines(new_gen_script)

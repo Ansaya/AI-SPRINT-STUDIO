@@ -32,6 +32,7 @@ class SPACE4AIDPartitioner():
         print("- Finding partitions of model: {}".format(self.partitionable_model))
         onnx_model = load_onnx_model(self.onnx_file)
         sorted_nodes = self._get_sorted_nodes(onnx_model=onnx_model)
+
         return self.onnx_model_split_first_smallest(sorted_nodes, onnx_model=onnx_model)
 
     def _get_node_type(self, onnx_model, node_name):
