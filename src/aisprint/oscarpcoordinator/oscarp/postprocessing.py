@@ -8,8 +8,11 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
+import global_parameters
 from input_file_processing import get_interpolation_values, get_extrapolation_values
 from utils import show_error, write_list_of_strings_to_file, auto_mkdir, csv_to_list_of_dict
+
+import global_parameters as gp
 
 
 def get_first_job(timelist):
@@ -131,12 +134,11 @@ def calculate_maximum_parallelism(run):
     return calculate_parallelism(smallest_core, max_cores, 0, 0, run["nodes"])
 
 
-def prepare_runtime_data(campaign_dir, repetitions, runs, services):
+def prepare_runtime_data(repetitions, runs, services):
     """
     outputs two runtime/parallelism dataframes:
     * the first contains every run (including repetitions)
     * the second one instead averages the repeated runs
-    :param campaign_dir: path to the current campaign folder, containing all the "Run #i" folders as well as the "Results" folder
     :param repetitions: number of times each run is repeated
     :param runs: list of runs, each run being a dictionary containing info such as the number of nodes, the list and configuration of services
     :param services: ordered list of services, each a dictionary containing name of the service (as string),
@@ -160,17 +162,17 @@ def prepare_runtime_data(campaign_dir, repetitions, runs, services):
         for j in range(repetitions):
             current_index = i*repetitions + j
             current_run = runs[current_index]
-            working_dir = os.path.join(campaign_dir, current_run["id"])
+            working_dir = os.path.join(gp.runs_dir, current_run["id"])
             runtime = calculate_runtime(working_dir, services)
             runtimes_to_average.append(runtime)
             runtimes.append(runtime)
-            parallelism.append(current_run["parallelism"])
+            parallelism.append(current_run["services"][0]["parallelism"])
             run.append("Run #" + str(j + 1))
         average_runtime = calculate_average(runtimes_to_average)
         average_runtime = round(average_runtime, 3)
 
         averaged_runtimes.append(average_runtime)
-        averaged_parallelism.append(current_run["parallelism"])
+        averaged_parallelism.append(current_run["services"][0]["parallelism"])
 
     data = {
         "runtime": runtimes,

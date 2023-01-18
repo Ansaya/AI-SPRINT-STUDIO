@@ -32,7 +32,7 @@ def _get_command_output(command):
 
 
 def get_command_output_wrapped(command):
-    for t in [5, 5, 10, 15, 30, 60, 120, 5*60, 10*60, 15*60]:
+    for t in [5, 5, 10, 15, 30, 60, 120, 5*60, 10*60]:
         lines, errors = _get_command_output(command)
         if errors:  # empty list equals to False
             show_warning("Errors encountered, retrying in " + str(t) + " seconds")
@@ -154,6 +154,15 @@ def delete_directory(dir_path):
     shutil.rmtree(dir_path)
 
 
+def delete_file(file_path):
+    os.remove(file_path)
+
+
+def ensure_slash_end(path):
+    if path[-1] != "/":
+        path += "/"
+    return path
+
 # OTHER UTILS
 
 def dict_to_string(input_dict):
@@ -179,3 +188,22 @@ def make_debug_info(raw_list):
 def strip_ansi_from_string(string):
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     return ansi_escape.sub('', string)
+
+
+"""
+def addition_lists(list_one, list_two):
+    diff = len(list_one) - len(list_two)
+
+    if diff > 0:  # list_one is bigger
+        for i in range(diff):
+            list_two.append(0)
+    else:
+        for i in range(abs(diff)):  # list two is bigger (or they are equal and nothing happens)
+            list_one.append(0)
+
+    result = []
+    for i in range(len(list_one)):
+        result.append(list_one[i] + list_two[i])
+
+    return result
+"""

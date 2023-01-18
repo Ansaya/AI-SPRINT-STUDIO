@@ -1,17 +1,22 @@
+import math
 from itertools import combinations
+
+from oscarp.utils import show_fatal_error
+
+import global_parameters as gp
 
 
 # # # # # # # # # # # #
 # Main functions
 # # # # # # # # # # # #
 
-def get_testing_units(testing_components):
+def get_testing_units():
 
     testing_units = []
     g = 1
     while True:
         current_group = []
-        group = query_testing_components(testing_components, g, None, None)
+        group = query_testing_components(gp.testing_components, g, None, None)
 
         # if there are no more matches, exits
         if not group:
@@ -20,21 +25,14 @@ def get_testing_units(testing_components):
         for c in group:
             # if it's a partition, I compose the unit by connecting all matching partitions
             if is_partition(c):
-                current_group += connect_partitions(testing_components, c)
+                current_group += connect_partitions(gp.testing_components, c)
             else:
                 current_group.append([c])
 
         testing_units.append(current_group)
         g += 1
 
-    """
-    for g in testing_units:
-        for u in g:
-            print(u)
-        print("")
-    """
-
-    return testing_units
+    gp.testing_units = testing_units
 
 
 def connect_partitions(testing_components, component):
@@ -69,25 +67,20 @@ def connect_partitions(testing_components, component):
     return connected_partitions
 
 
-def get_deployments(units):
-    deployments = units[0]
+def get_deployments():
+    deployments = gp.testing_units[0]
 
-    for i in range(1, len(units)):
+    for i in range(1, len(gp.testing_units)):
         temp_list = []
 
         for x in deployments:
-            for u in units[i]:
+            for u in gp.testing_units[i]:
                 n = x + u
                 temp_list.append(n)
 
         deployments = temp_list
 
-    """
-    for d in deployments:
-        print(d)
-    """
-
-    return deployments
+    gp.deployments = deployments
 
 
 def reorder_deployments(deployments, resources):
@@ -105,33 +98,82 @@ def reorder_deployments(deployments, resources):
             if r in deployments:
                 deployments.remove(r)
 
-    # reordered_deployments = add_single_services(reordered_deployments)
-
     return reordered_deployments
 
 
-def get_single_services_from_deployment(deployment, tested_services):
+def get_single_services_from_deployment():
 
     services_in_deployment = []
     services_to_test = []
 
-    for c in deployment:
-        services_in_deployment.append([c])
-        if [c] not in tested_services:
-            services_to_test.append([c])
+    for c in gp.current_deployment:
+        services_in_deployment.append(c)
+        if c not in gp.tested_services:
+            services_to_test.append(c)
 
-    tested_services += services_to_test
+    gp.tested_services += services_to_test
 
-    return services_in_deployment, services_to_test, tested_services
+    return services_in_deployment, services_to_test
 
 
-def make_deployments_summary(campaign_dir, deployments):
+def make_deployments_summary():
     print("Deployments:")
-    with open(campaign_dir + "/deployments_summary.txt", "w") as file:
-        for i in range(len(deployments)):
-            deployment = "deployment_" + str(i) + ": " + str(deployments[i])
+    with open(gp.campaign_dir + "/deployments_summary.txt", "w") as file:
+        for i in range(len(gp.deployments)):
+            deployment = "deployment_" + str(i) + ": " + str(gp.deployments[i])
             print("\t" + deployment)
             file.write(deployment + "\n")
+
+
+def make_cluster_requirements():
+    cluster_requirements = {}
+    for component in gp.current_deployment:
+        resource = component.split('@')[1]
+        parallelism = gp.testing_components[component]["parallelism"]
+        # container requirements
+        cpu = gp.images[component]["cpu"]
+        memory = gp.images[component]["memory"]
+        # node resources (minus 10% headroom for OS)
+        node_cpu = gp.resources[resource]["max_cpu_cores"] * 0.9
+        node_memory = gp.resources[resource]["max_memory_mb"] * 0.9
+        total_nodes = gp.resources[resource]["total_nodes"]
+
+        # make sure that a node can fit at least one container
+        if cpu > node_cpu or memory > node_memory:
+            show_fatal_error("Container requires more resources than available on a node")
+
+        if resource == "AWS Lambda" and gp.images[component]["memory"] > 3008:
+            show_fatal_error("Memory for Lambda functions can't exceed 3008 MB")
+
+        # calculate how many containers can a node accommodate
+        container_per_node = math.floor(min(node_cpu / cpu, node_memory / memory))
+        node_per_container = 1 / container_per_node
+
+        node_requirements = []
+
+        if resource not in cluster_requirements.keys():
+            for x in parallelism:
+                nr = math.ceil(x * node_per_container)
+                node_requirements.append(nr)
+                if nr > total_nodes:
+                    show_fatal_error("A parallelism of {} isn't possible on resource {}"
+                                     .format(x, resource))
+        else:
+            prev_node_requirements = cluster_requirements[resource]["nodes"]
+            for x in range(len(parallelism)):
+                nr = math.ceil(parallelism[x] * node_per_container)  # node requirement for current parallelism
+                nr += prev_node_requirements[x]  # node requirement for current parallelism, for all services up to now
+                node_requirements.append(nr)
+                if nr > total_nodes:
+                    show_fatal_error("Resource {} has {} nodes, but {} are needed for testing"
+                                     .format(resource, total_nodes, nr))
+
+        cluster_requirements[resource] = {
+            "nodes": node_requirements
+        }
+
+    gp.clusters_node_requirements = cluster_requirements
+    return
 
 
 # # # # # # # # # # # #

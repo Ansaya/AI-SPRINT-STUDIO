@@ -16,4 +16,11 @@ RUN pip install --no-cache-dir -r requirements-space4ai.txt
 
 COPY . /ai-sprint-design
 RUN cd /ai-sprint-design && python3 -m pip install .
+COPY ./src/aisprint/oscarpcoordinator/oscarp/executables /bin/oscarp_executables
 RUN rm -r /ai-sprint-design
+
+RUN git clone https://gitlab.polimi.it/ai-sprint/toscarizer.git && \
+    cd toscarizer && \
+    pip install . && \
+    cd ..  && \
+    rm -rf toscarizer

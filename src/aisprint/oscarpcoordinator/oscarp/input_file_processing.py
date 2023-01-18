@@ -16,7 +16,7 @@ def consistency_check(services):
     for i in range(len(services) - 1):
         match_found = False
         current_service = services[i]
-        next_service = services[i+1]
+        next_service = services[i + 1]
         for output_bucket in current_service["outputs"]:
             if output_bucket == next_service["input"]:
                 match_found = True
@@ -41,7 +41,7 @@ def get_simple_services(services):
             "cluster": s["cluster"],
             "input": s["input_bucket"],
             "output": s["output_bucket"],
-            }
+        }
         simple_services.append(service)
 
     return simple_services
@@ -64,12 +64,11 @@ def get_buckets_name_from_list(bucket_list):
 
 # given a list of ordered services it prints the workflow
 def show_workflow(services):
-
     print("Workflow:\n\tstorage -> " + services[0]["input"])
 
     for s in services:
-        input_bucket = s["input"]
-        output_bucket = s["output"][0]
+        input_bucket = s["input"].split('/')[-1]
+        output_bucket = s["output"][2].split('/')[-1]
         print("\t" + colored(input_bucket) + " -> |" + colored(s["name"], "blue") + "| -> " + colored(output_bucket))
 
     return
@@ -78,10 +77,10 @@ def show_workflow(services):
 # receives a variable (i.e. mem array for a service), a counter and a boolean variable for "continue"
 # if variable is a list and the counter is lower than its length (i.e. list has length 3 and counter is 1) it means
 #   another run should be scheduled, so cont is set to 1
-# if variable isn't a list, or it is, but we reached its end, it returns the last available value and doesn't change cont
+# if variable isn't a list, or it is but we reached its end, it returns the last available value and doesn't change cont
 def var_process(x, i, cont):
     if type(x) is list:
-        if len(x) > i+1:
+        if len(x) > i + 1:
             x = x[i]
             cont = 1
         else:
@@ -98,10 +97,10 @@ def run_scheduler():
     with open("input.yaml", "r") as file:
         script_config = yaml.load(file, Loader=yaml.FullLoader)["configuration"]
         repetitions = script_config["run"]["repetitions"]
-        parallelism = script_config["run"]["parallelism"]
+        # parallelism = script_config["run"]["parallelism"]
         services = script_config["services"]
 
-    base = base_scheduler_parallel(parallelism, services)
+    base = base_scheduler_parallel(services)
     runs = base_to_runs(base, repetitions)
 
     return base, runs
@@ -179,10 +178,9 @@ def get_possible_parallelisms(total_nodes, max_cores, max_memory):
 
 
 # todo finish comments
-def base_scheduler_parallel(parallelism, services):
+def base_scheduler_parallel(services):
     """
     schedules the base runs by using the "parallelism" array
-    :param parallelism:
     :param services:
     :return:
     """
@@ -190,7 +188,10 @@ def base_scheduler_parallel(parallelism, services):
     clusters = get_clusters_info()
     base = []
 
-    for p in parallelism:
+    first_service = list(services[0].keys())[0]  # only needed to get parallelism length
+    parallelism_length = len(services[0][first_service]["parallelism"])
+
+    for x in range(parallelism_length):
 
         configured_services = []  # services configured correctly for the given parallelism level
 
@@ -200,15 +201,22 @@ def base_scheduler_parallel(parallelism, services):
             current_service = s[service_name]
             current_cluster_name = current_service["cluster"]
             current_cluster = clusters[current_cluster_name]
-            possible_parallelism = current_cluster["possible_parallelism"]
+
+            """
+            # possible_parallelism = current_cluster["possible_parallelism"]
 
             # checks if the requested parallelism level is achievable on the selected cluster
             # if not it returns the closest available level
-            closest_p = get_closest_parallelism_level(p, possible_parallelism, current_service["cluster"], True)
+            # closest_p = get_closest_parallelism_level(p, possible_parallelism, current_service["cluster"], True)
 
             # after choosing a parallelism level we gather the node configuration for the selected cluster
             cpu = possible_parallelism[closest_p][0]
             memory = possible_parallelism[closest_p][2]
+            """
+
+            cpu = current_service["cpu"]
+            memory = current_service["memory"]
+            parallelism = current_service["parallelism"][x]
 
             # puts everything in a dictionary
             new_service = {
@@ -216,12 +224,15 @@ def base_scheduler_parallel(parallelism, services):
                 "cpu": str(cpu),
                 "memory": str(memory),
                 "image": current_service["image"],
+                "parallelism": parallelism,
                 "cluster": current_cluster_name,
                 "oscarcli_alias": current_cluster["oscarcli_alias"],
-                "minio_alias": current_cluster["minio_alias"],
+                "storage_provider": current_cluster["storage_provider"],
+                "storage_provider_alias": current_cluster["storage_provider_alias"],
                 "input_bucket": current_service["input_bucket"],
-                "output_bucket": current_service["output_bucket"]
-                }
+                "output_bucket": current_service["output_bucket"],
+                "is_lambda": current_service["is_lambda"]
+            }
             configured_services.append(new_service)
 
         # makes sure that the output bucket provider of one service will match the input bucket provider of the next
@@ -230,18 +241,19 @@ def base_scheduler_parallel(parallelism, services):
             current_service = configured_services[i]
             next_service = configured_services[i + 1]
 
-            output_bucket = current_service["output_bucket"]
-            current_service["output_bucket"] = (output_bucket, next_service["minio_alias"])  # tuple bucket/provider
+            # output_bucket = current_service["output_bucket"]
+            current_service["output_bucket"] = (next_service["storage_provider"],
+                                                next_service["storage_provider_alias"],
+                                                next_service["input_bucket"])  # provider.alias/bucket, eg. minio.minio-vm/bucket0
 
         # for the last service the bucket provider is always the default one
         current_service = configured_services[i + 1]
         output_bucket = current_service["output_bucket"]
-        current_service["output_bucket"] = (output_bucket, "default")  # tuple bucket/provider
+        current_service["output_bucket"] = (current_service["storage_provider"], "default", output_bucket)
 
         # id will be added later on
         run = {
             "id": "",
-            "parallelism": p,  # this will be moved into the single services
             "services": configured_services
         }
         base.append(run)
@@ -257,7 +269,7 @@ def base_to_runs(base, repetitions):
         b = base[i]
         b["id"] = "Run #" + str(i + 1)
         for j in range(repetitions):
-            run_id = i*repetitions + j + 1
+            run_id = i * repetitions + j + 1
             r = b.copy()
             r["id"] = "Run #" + str(run_id)
             runs.append(r)
@@ -298,7 +310,7 @@ def get_closest_parallelism_level(requested_parallelism, possible_parallelism, c
         closest_parallelism = min(possible_parallelism, key=lambda x: abs(x - requested_parallelism))
         if verbose:
             show_warning("A parallelism of " + str(requested_parallelism) + " is not achievable on cluster "
-                     + cluster_name + ", using " + str(closest_parallelism) + " instead")
+                         + cluster_name + ", using " + str(closest_parallelism) + " instead")
         return closest_parallelism
     else:
         return requested_parallelism
@@ -315,9 +327,7 @@ def get_clusters_info():
         name = list(cluster.keys())[0]
         cluster = cluster[name]
         all_clusters[name] = cluster
-        all_clusters[name]["possible_parallelism"] = get_possible_parallelisms(cluster["total_nodes"],
-                                                                               cluster["max_cpu_cores"],
-                                                                               cluster["max_memory_mb"])
+
     return all_clusters
 
 
@@ -350,7 +360,7 @@ def get_cluster_ssh_info():
 def get_run_info():
     with open("input.yaml", "r") as file:
         i = yaml.load(file, Loader=yaml.FullLoader)["configuration"]["run"]
-        return i["campaign_dir"], i["run_name"], i["repetitions"], i["cooldown_time"]
+        return i["repetitions"], i["cooldown_time"], i["stop_at_run"]
 
 
 def get_time_correction():

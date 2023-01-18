@@ -1,48 +1,79 @@
 # all methods related to the initial cluster configuration (before run start)
+import time
 
 import yaml
 import json
 import os
+import random
+
+from tqdm import tqdm
 
 import executables
 
 from termcolor import colored
+from datetime import date
 
 from input_file_processing import get_debug, get_closest_parallelism_level
 from utils import configure_ssh_client, get_ssh_output, get_command_output_wrapped, show_debug_info, \
-    make_debug_info, show_warning
+    make_debug_info, show_warning, show_fatal_error
+
+import global_parameters as gp
 
 
 def remove_all_services(clusters):
     print(colored("Removing services...", "yellow"))
     for c in clusters:
-        cluster = clusters[c]
-        set_default_oscar_cluster(cluster)
-        command = executables.oscar_cli.get_command("service ls")
-        services = get_command_output_wrapped(command)
-        services.pop(0)
-        for service in services:
-            service = service.split()[0]
-            command = executables.oscar_cli.get_command("service remove " + service)
-            get_command_output_wrapped(command)
-            print("Removed service " + service + " from cluster " + c)
+        if c != "AWS Lambda":
+            cluster = clusters[c]
+            set_default_oscar_cluster(cluster)
+            command = executables.oscar_cli.get_command("service ls")
+            services = get_command_output_wrapped(command)
+            services.pop(0)
+            for service in services:
+                service = service.split()[0]
+                command = executables.oscar_cli.get_command("service remove " + service)
+                get_command_output_wrapped(command)
+                print("Removed service " + service + " from cluster " + c)
     print(colored("Done!", "green"))
 
 
 def remove_all_buckets(clusters):
     print(colored("Removing buckets...", "yellow"))
     for c in clusters:
-        cluster = clusters[c]
-        minio_alias = cluster["minio_alias"]
-        command = executables.mc.get_command("ls " + minio_alias)
-        buckets = get_command_output_wrapped(command)
-        for bucket in buckets:
-            bucket = bucket.split()[-1]
-            if bucket != "storage/":
-                bucket = minio_alias + "/" + bucket
-                command = executables.mc.get_command("rb " + bucket + " --force")
-                get_command_output_wrapped(command)
-                print("Removed bucket " + bucket + " from cluster " + c)
+        if c != "AWS Lambda":
+            cluster = clusters[c]
+            minio_alias = cluster["storage_provider_alias"]
+            command = executables.mc.get_command("ls " + minio_alias)
+            buckets = get_command_output_wrapped(command)
+            for bucket in buckets:
+                bucket = bucket.split()[-1]
+                if bucket != "storage/":
+                    bucket = minio_alias + "/" + bucket
+                    command = executables.mc.get_command("rb " + bucket + " --force")
+                    get_command_output_wrapped(command)
+                    print("Removed bucket " + bucket + " from cluster " + c)
+    print(colored("Done!", "green"))
+    return
+
+
+def clean_s3_buckets():
+    print(colored("Cleaning S3 buckets...", "yellow"))
+    command = "aws s3 ls"
+    buckets = get_command_output_wrapped(command)
+    for b in buckets:
+        b = b.split()[2]
+        if "scar-bucket" in b or "test" in b:
+            command = "aws s3 ls s3://" + b + "/"
+            folders = get_command_output_wrapped(command)
+            for f in folders:
+                f = f.split()[1]
+                command = "aws s3 ls s3://" + b + "/" + f
+                files = get_command_output_wrapped(command)
+                for file in files[1:]:
+                    command = "aws s3 rm s3://" + b + "/" + f + file.split()[-1]
+                    get_command_output_wrapped(command)
+
+            print("Cleaned bucket " + b)
     print(colored("Done!", "green"))
     return
 
@@ -111,43 +142,43 @@ def make_fdl_buckets_list(buckets):
 
 
 # generate the FDL file used to prepare OSCAR, starting from the input yaml
-# todo change to make
+# todo change to "make"
 def generate_fdl_configuration(services, clusters):
+
     with open("FDL_configuration.yaml", "w") as file:
 
         fdl_services = []
+
         for current_service in services:
 
-            """
-            for i in current_service:
-                print(i, current_service[i])
-            """
+            script_path = executables.script  # todo will replace with script inside images
 
-            oscarcli_alias = current_service["oscarcli_alias"]
-            # script_path = "bash-scripts/" + current_service["name"] + ".sh"
-            script_path = executables.script
-
-            fdl_service = {oscarcli_alias: {
-                "cpu": current_service["cpu"],
-                "memory": current_service["memory"] + "Mi",
-                "image": current_service["image"],
+            fdl_service = {
                 "name": current_service["name"],
-                "script": script_path,
-                "input": [{
-                    "path": current_service["input_bucket"],
-                    "storage_provider": "minio.default"
-                }],
-                "output": [{
-                    "path": current_service["output_bucket"][0],
-                    "storage_provider": "minio." + current_service["output_bucket"][1]
-                }]
-                }
+                "input": [{"path": "", "storage_provider": ""}],
+                "output": [{"path": "", "storage_provider": ""}]
             }
-            fdl_services.append(fdl_service)
 
-        fdl_config = {"functions": {"oscar": fdl_services},
-                      "storage_providers": {"minio": generate_fdl_storage_providers(clusters)}}
+            if not current_service["is_lambda"]:
+                fdl_service["input"][0]["storage_provider"] = "minio.default"
+                fdl_service["input"][0]["path"] = current_service["input_bucket"]
+                fdl_service["output"][0]["storage_provider"] = current_service["output_bucket"][0] + "." + current_service["output_bucket"][1]
+                fdl_service["output"][0]["path"] = current_service["output_bucket"][2]
+                fdl_service["cpu"] = float(current_service["cpu"])
+                fdl_service["memory"] = current_service["memory"] + "Mi"
+                fdl_service["image"] = current_service["image"]
+                fdl_service["script"] = script_path
+                oscarcli_alias = current_service["oscarcli_alias"]
+                fdl_service = {oscarcli_alias: fdl_service}
+                fdl_services.append(fdl_service)
+
+        fdl_config = {"functions": {},
+                      "storage_providers": generate_fdl_storage_providers()}
+
+        fdl_config["functions"]["oscar"] = fdl_services
+
         yaml.dump(fdl_config, file)
+        return
 
 
 # generate the FDL file used to prepare OSCAR, including only the specified service
@@ -158,32 +189,11 @@ def generate_fdl_single_service(service, clusters):
     service["input_bucket"] = original_input_bucket
 
 
-def generate_fdl_storage_providers(clusters):
-    home_dir = os.path.expanduser('~')
-
-    with open(executables.mc.config + "/config.json") as file:
-        minio_config = json.load(file)
-
-    providers = {}
-
-    for c in clusters:
-        cluster_minio_alias = clusters[c]["minio_alias"]
-        cluster_info = minio_config["aliases"][cluster_minio_alias]
-
-        providers[cluster_minio_alias] = {
-            "endpoint": cluster_info["url"],
-            "access_key": cluster_info["accessKey"],
-            "secret_key": cluster_info["secretKey"],
-            "region": "us-east-1"
-        }
+def generate_fdl_storage_providers():  # todo the credentials file will have to be generated automatically
+    with open(gp.application_dir + "oscarp/credentials.yaml") as file:
+        providers = yaml.load(file, Loader=yaml.FullLoader)
 
     return providers
-
-
-def _apply_fdl_configuration():
-    command = executables.oscar_cli.get_command("apply " + "FDL_configuration.yaml")
-    get_command_output_wrapped(command)
-    return
 
 
 def apply_fdl_configuration_wrapped(services):
@@ -194,30 +204,35 @@ def apply_fdl_configuration_wrapped(services):
     """
 
     print(colored("Adjusting OSCAR configuration...", "yellow"))
-    while True:
-        _apply_fdl_configuration()
-        if verify_correct_fdl_deployment(services):
-            break
+    _apply_fdl_configuration_oscar()
+    verify_correct_oscar_deployment(services)
     print(colored("Done!", "green"))
+    return
 
 
-def verify_correct_fdl_deployment(services):
+def _apply_fdl_configuration_oscar():
+    command = executables.oscar_cli.get_command("apply " + "FDL_configuration.yaml")
+    get_command_output_wrapped(command)
+    return
+
+
+def verify_correct_oscar_deployment(services):
     """
     after applying the FDL file, makes sure that all the required services are deployed
     """
 
-    print(colored("Checking correct deployment...", "yellow"))
+    print(colored("Checking correct OSCAR deployment...", "yellow"))
 
     for s in services:
-        deployed_services = get_deployed_services(s["oscarcli_alias"])
+        if not s["is_lambda"]:
+            deployed_services = get_deployed_services(s["oscarcli_alias"])
 
-        if s["name"] not in deployed_services:
-            show_warning("Service " + s["name"] + " not deployed")
-            return False
-        else:
-            print("Service " + s["name"] + " deployed on cluster " + s["cluster"])
+            if s["name"] not in deployed_services:
+                show_fatal_error("Service " + s["name"] + " not deployed")
+            else:
+                print("Service " + s["name"] + " deployed on cluster " + s["cluster"])
 
-    return True
+    return
 
 
 def get_deployed_services(oscarcli_alias):
@@ -238,7 +253,7 @@ def get_deployed_services(oscarcli_alias):
 def get_active_cluster(service, clusters):
     cluster_name = service["cluster"]
     cluster = clusters[cluster_name]
-    return cluster
+    return cluster, cluster_name
 
 
 def set_default_oscar_cluster(cluster):
@@ -248,63 +263,3 @@ def set_default_oscar_cluster(cluster):
 def set_default_oscar_cluster_from_alias(oscarcli_alias):
     command = executables.oscar_cli.get_command("cluster default -s " + oscarcli_alias)
     get_command_output_wrapped(command)
-
-
-# returns a list of nodes, with status = off if cordoned or on otherwise
-# doesn't return master nodes
-def get_node_list(client):
-    lines = get_ssh_output(client, "sudo kubectl get nodes")
-
-    lines.pop(0)
-
-    node_list = []
-
-    for line in lines:
-        node_name = line.split()[0]
-        node_status = line.split()[1]
-        node_role = line.split()[2]
-        if "SchedulingDisabled" in node_status:
-            node_status = "off"
-        else:
-            node_status = "on"
-
-        # doesn't include master node
-        if "master" not in node_role:
-            node_list.append({
-                "name": node_name,
-                "status": node_status,
-            })
-
-    return node_list
-
-
-# cordons or un-cordons the nodes of the cluster to obtain the number requested for the current run
-def apply_cluster_configuration(run, clusters):
-    print(colored("Adjusting clusters configuration...", "yellow"))
-
-    for c in clusters:
-        cluster = clusters[c]
-
-        # for AWS setting the SSH field as None should make it skip the node management, which for now is done manually
-        if cluster["ssh"] is not None:
-            closest_parallelism = get_closest_parallelism_level(run["parallelism"],
-                                                                cluster["possible_parallelism"], c, False)
-
-            client = configure_ssh_client(cluster)
-            node_list = get_node_list(client)
-
-            requested_number_of_nodes = cluster["possible_parallelism"][closest_parallelism][1]
-
-            show_debug_info(make_debug_info(["Cluster configuration BEFORE:"] + node_list))
-
-            for i in range(1, len(node_list) + 1):
-                node = node_list[i - 1]
-                if i <= requested_number_of_nodes and node["status"] == "off":
-                    get_ssh_output(client, "sudo kubectl uncordon " + node["name"])
-                if i > requested_number_of_nodes and node["status"] == "on":
-                    get_ssh_output(client, "sudo kubectl cordon " + node["name"])
-
-            show_debug_info(make_debug_info(["Cluster configuration AFTER:"] + get_node_list(client)))
-
-    print(colored("Done!", "green"))
-    return

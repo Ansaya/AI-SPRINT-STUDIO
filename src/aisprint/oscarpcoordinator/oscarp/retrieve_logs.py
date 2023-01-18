@@ -1,5 +1,6 @@
 # oscar and kubectl logs are saved as txts and processed in dictionaries saved as pickle files
-
+import csv
+import json
 import pickle
 import os
 from tqdm import tqdm
@@ -13,13 +14,15 @@ from input_file_processing import get_time_correction
 from cluster_manager import set_default_oscar_cluster, get_active_cluster
 from utils import configure_ssh_client, get_ssh_output, get_command_output_wrapped, show_debug_info
 
+import global_parameters as gp
+
 global run_name
 
 
 # todo must comment more everywhere
 
 def pull_logs(name, services, clusters):
-    print(colored("Collecting logs...", "yellow"))
+    print(colored("Collecting OSCAR logs...", "yellow"))
     global run_name
     run_name = name
     os.system("mkdir \"" + run_name + "/logs_kubectl\"")
@@ -27,18 +30,19 @@ def pull_logs(name, services, clusters):
 
     for service in services:
         service_name = service["name"]
-        cluster = get_active_cluster(service, clusters)
-        # client = configure_ssh_client(cluster)  # todo temporarily disabled
-        client = None
-        timed_job_list = get_timed_jobs_list(service_name, client, cluster)
-        save_timelist_to_file(timed_job_list, service_name)
+        cluster, cluster_name = get_active_cluster(service, clusters)
+        if cluster["oscarcli_alias"] is not None:  # e.g. it's not Lambda
+            # client = configure_ssh_client(cluster)  # todo temporarily (?) disabled
+            client = None
+            timed_job_list = get_timed_jobs_list(service_name, client, cluster, cluster_name)
+            save_timelist_to_file(timed_job_list, service_name)
 
     print(colored("Done!", "green"))
 
 
 # for a given service, it saves as text file a copy of the logs from OSCAR and kubectl, and also returns a timelist
 # todo explain better in comment
-def get_timed_jobs_list(service, client, cluster):
+def get_timed_jobs_list(service, client, cluster, cluster_name):
     date_format = "%Y-%m-%d %H:%M:%S"
 
     # pod_list = get_kubernetes_pod_list(client)  # todo restore
@@ -67,7 +71,7 @@ def get_timed_jobs_list(service, client, cluster):
         pod_node = ""
         pod_creation = ""
 
-        # todo restore
+        # todo restore? tricky, physical and virtual nodes are accessed in different ways
 
         """
         for pod in pod_list:
@@ -79,10 +83,10 @@ def get_timed_jobs_list(service, client, cluster):
         bash_script_start, bash_script_end = get_oscar_log(service, job_name)
 
         timed_job_list[job_name] = {"service": service,
-                                    "cluster": cluster,
-                                    "node": pod_node,
+                                    "resource": cluster_name,
+                                    # "node": pod_node,
                                     "job_create": job_create,
-                                    "pod_create": pod_creation,
+                                    # "pod_create": pod_creation,
                                     "job_start": job_start,
                                     "bash_script_start": bash_script_start,
                                     "bash_script_end": bash_script_start,
@@ -152,8 +156,93 @@ def get_kubectl_log(client, pod_name):
     return create_time, node
 
 
+def pull_scar_logs(name, services):
+    """
+    pulls the log for every lambda function, start time is the first "storage event found", end is last "uploading file"
+    :return:
+    """
+
+    if not gp.has_active_lambdas:
+        return
+
+    print(colored("Collecting SCAR logs...", "yellow"))
+
+    global run_name
+    run_name = name
+
+    date_format = "%H:%M:%S,%f"
+
+    command = "scar ls"
+    lambda_functions = get_command_output_wrapped(command)
+    for service in services:
+        service_name = service["name"]
+        for function in lambda_functions[3:]:
+            function = function.split()[0]
+            if service_name == function:  # this is needed when testing a single lambda to download the right log
+
+                log = get_scar_log(function)
+
+                # todo ? not sure if needed, we'll see
+
+                """
+                for line in log:
+                    if "REPORT RequestId" in line:
+                        print(line.split())
+                        print(line.split()[2])  # id
+                        print(line.split()[8])  # duration
+                """
+
+                for i in range(0, len(log)):
+                    line = log[i]
+                    if "Storage event found" in line:
+                        start_time = line.split()[1]
+                        start_time = datetime.strptime(start_time, date_format)
+                        break
+
+                for i in range(len(log) - 1, 0, -1):  # recurse backwards
+                    line = log[i]
+                    if "Uploading file" in line:
+                        end_time = line.split()[1]
+                        end_time = datetime.strptime(end_time, date_format)
+                        break
+
+                # todo ? maybe save copy of log, and make json/pickle with just durations of functions
+
+                timed_job_list = {"lambda_job": {"service": function,
+                                                 "resource": "AWS Lambda",
+                                                 "job_create": start_time,
+                                                 "job_finish": end_time
+                                                 }}
+
+                save_timelist_to_file(timed_job_list, function)
+    print(colored("Done!", "green"))
+    return
+
+
+def get_scar_log(function):
+    command = "scar log -n " + function
+    log = get_command_output_wrapped(command)
+
+    # todo should probably save index instead, or as well
+
+    if function in gp.scar_logs_end_markers.keys():
+        last_line = gp.scar_logs_end_markers[function]
+        for i in range(len(log)):
+            line = log[i]
+            if line == last_line:
+                log = log[i:]
+                break
+
+    gp.scar_logs_end_markers[function] = log[-2]
+
+    return log
+
+
 # dumps a timelist to file
 def save_timelist_to_file(timed_job_list, service_name):
+    with open(run_name + "/time_table_" + service_name + ".json", "w") as file:
+        json.dump(timed_job_list, file, indent=4, sort_keys=False, default=str)
+
     with open(run_name + "/time_table_" + service_name + ".pkl", "wb") as file:
         pickle.dump(timed_job_list, file, pickle.HIGHEST_PROTOCOL)
     return

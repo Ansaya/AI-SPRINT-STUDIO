@@ -1,80 +1,129 @@
 import copy
 import time
 
-from input_files_parser import get_resources, get_run_parameters, get_components_and_images, get_testing_components
+from termcolor import colored
+
+from infrastructure_manager import create_virtual_infrastructures, adjust_physical_infrastructures_configuration, \
+    update_virtual_infrastructures, delete_all_virtual_infrastructures, delete_unused_virtual_infrastructures
+from input_files_parser import get_resources, get_run_parameters, get_components_and_images, get_testing_components, \
+    get_testing_parameters
 from deployment_generator import get_testing_units, get_deployments, reorder_deployments, \
-    get_single_services_from_deployment, make_deployments_summary
-from run_coordinator import make_oscar_p_input_file
+    get_single_services_from_deployment, make_deployments_summary, make_cluster_requirements
+from lambda_manager import setup_scar, remove_all_lambdas
+from run_coordinator import make_oscar_p_input_file, make_services_list, make_oscar_p_input_file_single
 from oscarp.utils import auto_mkdir
 
 import oscarp.oscarp as oscarp
+import global_parameters as gp
 
 
-def main(work_dir):
+def main(input_dir):
 
-    if work_dir[-1] != "/":
-        work_dir += "/"
+    gp.set_application_dir(input_dir)
 
-    oscarp.executables.init(work_dir + "oscarp/")
+    # todo executables will have to be integrated inside docker image
+    oscarp.executables.init("/bin/oscarp_executables/")
 
     # get the necessary info from the different input file
-    resources = get_resources(work_dir)
-    components, images = get_components_and_images(work_dir)
-    run_parameters = get_run_parameters(work_dir)
-    # testing_parameters = get_testing_parameters()
-    testing_parameters = None
+    get_resources()  # uses common_config/candidate_resources.yaml
+    get_components_and_images()  # uses common_config/candidate_deployments.yaml
+    get_run_parameters()  # uses oscarp/run_parameters
 
     # merge some of those info together (check graph in coordinator.png)
-    testing_components = get_testing_components(components, testing_parameters)
-    testing_units = get_testing_units(testing_components)
+    get_testing_components()
+    get_testing_units()
 
     # create list of deployments, rearrange them as necessary
-    deployments = get_deployments(testing_units)
-    deployments = reorder_deployments(deployments, resources)
+    get_deployments()
+    # deployments = reorder_deployments(deployments, resources)  # todo make sure this works before re-enabling
 
     # set the stage for the campaign
-    campaign_dir = work_dir + "oscarp/" + run_parameters["run"]["campaign_dir"] + "/"
-    auto_mkdir(campaign_dir)
-    # auto_mkdir(campaign_dir + "/deployments/")
-    make_deployments_summary(campaign_dir, deployments)
+    gp.make_campaign_dir()
+    make_deployments_summary()
 
-    tested_services = []
+    # delete_all_virtual_infrastructures()  # todo RBF
+    gp.virtual_infrastructures = {}
 
-    for i in range(len(deployments)):
-        d = deployments[i]
+    # # # # # # # # # # #
+    # DEPLOYMENTS LOOP  #
+    # # # # # # # # # # #
+
+    for i in range(len(gp.deployments)):
+        # todo here check status of the campaign, to select the correct deployment
 
         print("\nTesting deployment_" + str(i) + ":")
 
-        # todo this will all be wrapped in a for loop, with IM correcting the cluster at every iteration
+        gp.set_current_deployment(i)
+        make_cluster_requirements()
 
-        run_parameters["run"]["campaign_dir"] = campaign_dir
-        run_parameters["run"]["run_name"] = "deployment_" + str(i)
-        current_deployment_dir = campaign_dir + "deployment_" + str(i)
+        base_length = len(list(gp.clusters_node_requirements.items())[0][1]["nodes"])  # todo ugly af, change
+        gp.run_parameters["run"]["main_dir"] = gp.application_dir
+        gp.run_parameters["run"]["campaign_dir"] = gp.campaign_dir
+        gp.run_parameters["run"]["run_name"] = "deployment_" + str(i)
 
-        make_oscar_p_input_file(d, testing_components, resources, copy.deepcopy(run_parameters), images,
-                                is_single_service=False, service_number=0)
+        make_services_list()
 
-        oscarp.main(clean_buckets=True)
+        # Infrastructure Manager
+        create_virtual_infrastructures()
 
-        auto_mkdir(current_deployment_dir + "/single_services/")
+        # Lambdas
+        setup_scar()
 
-        services_in_deployment, services_to_test, tested_services = get_single_services_from_deployment(d, tested_services)
+        # # # # # # #
+        # RUNS LOOP #
+        # # # # # # #
 
-        print("\nTesting services of deployment_" + str(i) + ":")
+        gp.current_base_index = 0
+        while gp.current_base_index < base_length:
 
-        for j in range(len(services_in_deployment)):
-            s = services_in_deployment[j]
-            if s in services_to_test:
-                run_parameters["run"]["campaign_dir"] = current_deployment_dir + "/single_services"
-                run_parameters["run"]["run_name"] = s[0]
+            # set the stage for the current deployment, including creating the deployment directory
+            gp.set_current_work_dir("Full_workflow")
+            gp.has_active_lambdas = gp.has_lambdas
 
-                make_oscar_p_input_file(s, testing_components, resources, copy.deepcopy(run_parameters), images,
-                                        is_single_service=True, service_number=j)
-                oscarp.main()
-                print()
+            adjust_physical_infrastructures_configuration()
+            # print(colored("! Updating cluster", "magenta"))
+            update_virtual_infrastructures()
 
-        time.sleep(5)
+            gp.is_single_service_test = False
+            gp.is_last_run = (gp.current_base_index + 1 == base_length)
 
+            # todo rename main_dir to application_dir
+            # todo will get rid of the input file altogether
+            make_oscar_p_input_file()
+            oscarp.main()
+
+            # # # # # # # # #
+            # SERVICES LOOP #
+            # # # # # # # # #
+
+            gp.tested_services = []
+            # auto_mkdir(gp.current_deployment_dir + "single_services/")
+            services_in_deployment, services_to_test = get_single_services_from_deployment()
+            gp.is_single_service_test = True
+
+            print("\nTesting services of deployment_" + str(i) + ":")
+
+            for j in range(len(services_in_deployment)):
+                s = services_in_deployment[j]
+                if s in services_to_test:  #and s[0].split("@")[1] != "AWS Lambda":
+                    gp.run_parameters["run"]["campaign_dir"] = gp.current_deployment_dir + "single_services/"
+                    # todo line above wrong, remove after refactoring, campaign dir should contain the deployment dirs
+                    gp.run_parameters["run"]["run_name"] = s
+                    # gp.current_deployment_dir += "single_services/" + s + "/"
+
+                    gp.has_active_lambdas = (s.split("@")[1] == "AWS Lambda")
+                    gp.set_current_work_dir(s)
+
+                    make_oscar_p_input_file_single(s, service_number=j)
+                    oscarp.main()
+                    print()
+
+            time.sleep(5)
+            gp.current_base_index += 1
+
+    # todo at the very end, remove lambdas
+    delete_all_virtual_infrastructures()
+    remove_all_lambdas()
 
 if __name__ == '__main__':
-    main("Demo_project")
+    main("Tosca_project")

@@ -10,29 +10,28 @@ from utils import auto_mkdir
 from aMLLibrary import sequence_data_processing
 # from aMLLibrary.model_building.predictor import Predictor
 
+import global_parameters as gp
 
-def run_mllibrary(results_dir, run_name):
-    """
-    coordinator function for training and testing the models
-    :param results_dir: path to the "Results" folder of the considered campaign
-    :param run_name:
-    """
 
+def run_mllibrary():
     print(colored("\nGenerating models...", "blue"))
 
     # sets directories
-    csvs_dir = results_dir + "/CSVs"
+    csvs_dir = gp.results_dir + "CSVs"
     # interpolation_csvs_dir = csvs_dir + "/Interpolation/"
     # extrapolation_csvs_dir = csvs_dir + "/Extrapolation/"
-    models_dir = results_dir + "/Models/"
+    models_dir = gp.results_dir + "Models/"
     auto_mkdir(models_dir)
     # interpolation_models_dir = models_dir + "Interpolation/"
     # extrapolation_models_dir = models_dir + "Extrapolation/"
     # auto_mkdir(interpolation_models_dir)
     # auto_mkdir(extrapolation_models_dir)
 
+    # full training
+    train_and_predict(csvs_dir, models_dir, gp.run_name)
+
     # interpolation tests
-    train_and_predict(csvs_dir, models_dir, run_name)
+    # train_and_predict(interpolation_csvs_dir, interpolation_models_dir)
 
     # extrapolation tests
     # train_and_predict(extrapolation_csvs_dir, extrapolation_models_dir)
@@ -53,15 +52,22 @@ def train_and_predict(csvs_dir, workdir, run_name):
     training_set = csvs_dir + "/runtime_core_" + run_name + ".csv"
     current_model = run_name
 
-    # with SFS
-    config_file = executables.amllibrary_sfs
-    output_dir_sfs = workdir + current_model + "_model_SFS"
-    train_models(config_file, training_set, output_dir_sfs)
+    if not gp.has_active_lambdas:
+        # with SFS
+        config_file = executables.amllibrary_sfs
+        output_dir_sfs = workdir + current_model + "_model_SFS"
+        train_models(config_file, training_set, output_dir_sfs)
 
-    # without SFS
-    config_file = executables.amllibrary_no_sfs
-    output_dir_no_sfs = workdir + current_model + "_model_noSFS"
-    train_models(config_file, training_set, output_dir_no_sfs)
+        # without SFS
+        config_file = executables.amllibrary_no_sfs
+        output_dir_no_sfs = workdir + current_model + "_model_noSFS"
+        train_models(config_file, training_set, output_dir_no_sfs)
+
+    else:
+        # dummy
+        config_file = executables.amllibrary_dummy
+        output_dir_no_sfs = workdir + current_model + "_model_noSFS"
+        train_models(config_file, training_set, output_dir_no_sfs)
 
     """
     # prediction

@@ -11,25 +11,22 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from cluster_manager import get_active_cluster
 from input_file_processing import get_closest_parallelism_level
 
+import global_parameters as gp
+
 
 # given a run, it creates a CSV file containing all the jobs of every service (as red from the timelists)
 # todo can probably be split into sub-functions
-def make_csv_table(working_dir, services, requested_parallelism, clusters):
+# todo out of order until updated to include SCAR
+def make_csv_table(working_dir, services, clusters, current_run_index):
     print(colored("Processing logs...", "yellow"))
 
-    # services = run["services"]
-    # requested_parallelism = run["parallelism"]
-
+    services = []  # todo this whole thing is being skipped, just kept the zip
     for service in services:
 
         service_name = service["name"]
         cluster = get_active_cluster(service, clusters)
 
-        closest_parallelism = get_closest_parallelism_level(requested_parallelism,
-                                                            cluster["possible_parallelism"], "", False)
-
-        cores_container, nodes_used, memory_container = cluster["possible_parallelism"][closest_parallelism]
-        # print(cores_container, nodes, memory_container)
+        nodes_used = cluster["nodes"][current_run_index]
 
         cores_total, memory_total = cluster["max_cpu_cores"], cluster["max_memory_mb"]
         total_nodes = cluster["total_nodes"]
@@ -56,7 +53,7 @@ def make_csv_table(working_dir, services, requested_parallelism, clusters):
                 node = job["node"]
                 full_time = (job["job_finish"] - job["job_create"]).total_seconds()
                 # wait = (job["pod_create"] - job["job_create"]).total_seconds()
-                wait = 2
+                wait = 2  # todo shouldn't this be fixed?
                 # pod_creation = (job["job_start"] - job["pod_create"]).total_seconds()
                 pod_creation = 5
                 overhead = (job["bash_script_start"] - job["job_start"]).total_seconds()
@@ -96,5 +93,5 @@ def delete_logs_folder(working_dir):
     return
 
 
-def make_done_file(working_dir):
-    open(working_dir + "/done", "a").close()
+def make_done_file(target_dir):
+    open(target_dir + "/done", "a").close()

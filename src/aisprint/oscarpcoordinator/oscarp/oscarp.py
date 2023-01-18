@@ -7,25 +7,29 @@ import executables
 
 from termcolor import colored
 
-from cluster_manager import remove_all_buckets, generate_fdl_configuration, apply_cluster_configuration, \
-    remove_all_services, apply_fdl_configuration_wrapped
+from cluster_manager import remove_all_buckets, generate_fdl_configuration, \
+    remove_all_services, apply_fdl_configuration_wrapped, clean_s3_buckets
 from gui import show_runs
 from input_file_processing import show_workflow, run_scheduler, get_run_info, \
     get_train_ml_models, get_clusters_info, get_simple_services, get_do_final_processing
 from postprocessing import prepare_runtime_data, plot_runtime_core_graphs, make_runtime_core_csv, save_dataframes
 from process_logs import make_csv_table, make_done_file
-from retrieve_logs import pull_logs
-from run_manager import move_input_files_to_input_bucket, wait_services_completion
+from retrieve_logs import pull_logs, pull_scar_logs
+from run_manager import move_input_files_to_input_bucket, wait_services_completion, move_input_files_to_s3_bucket
+from mllibrary_manager import run_mllibrary
 from utils import auto_mkdir, show_warning, delete_directory
 
-global run_dir, clusters, runs, run, simple_services, repetitions, run_name, current_deployment_dir
+global clusters, runs, run, simple_services, repetitions, current_run_dir
+
+import global_parameters as gp
 
 
-def prepare_clusters(clean_buckets):
+def prepare_clusters():
     remove_all_services(clusters)
-    if clean_buckets:
+    if not gp.is_single_service_test:
         remove_all_buckets(clusters)
-    apply_cluster_configuration(run, clusters)
+        if gp.has_active_lambdas:
+            clean_s3_buckets()
     generate_fdl_configuration(run["services"], clusters)
     apply_fdl_configuration_wrapped(run["services"])
 
@@ -36,51 +40,52 @@ def start_run_full():
     wait_services_completion(services)
 
 
-def end_run_full():
-    working_dir = os.path.join(run_dir, run["id"])
-    # os.mkdir(working_dir)
-    pull_logs(working_dir, simple_services, clusters)
-    make_csv_table(working_dir, run["services"], run["parallelism"], clusters)
+def end_run_full(current_run_index):
+    pull_logs(current_run_dir, simple_services, clusters)
+    pull_scar_logs(current_run_dir, simple_services)
+    make_csv_table(current_run_dir, run["services"], clusters, current_run_index)
     # download_bucket(campaign_dir + "/Database", "database")
-    make_done_file(working_dir)
+    make_done_file(current_run_dir)
+
+
+def test_single_lambda():
+    services = run["services"]
+    # print(services[0]["input_bucket"])
+    move_input_files_to_s3_bucket(services[0]["input_bucket"])
+    wait_services_completion(services)
 
 
 def final_processing():
     print(colored("\nFinal processing...", "blue"))
-    results_dir = current_deployment_dir + "/results"
-    auto_mkdir(results_dir)
+    auto_mkdir(gp.results_dir)
 
-    process_subfolder(results_dir, simple_services)
+    process_subfolder(simple_services)
 
-    if get_train_ml_models():
-        from mllibrary_manager import run_mllibrary
+    run_mllibrary()
 
-        run_mllibrary(results_dir, run_name)
-        # plot_ml_predictions_graphs(results_dir, run_name)
-
-    make_done_file(results_dir)
+    make_done_file(gp.results_dir)
     print(colored("Done!", "green"))
     # print("\n\n")
     return
 
 
-def process_subfolder(results_dir, services):
-    df, adf = prepare_runtime_data(run_dir, repetitions, runs, services)
+def process_subfolder(services):
+    df, adf = prepare_runtime_data(repetitions, runs, services)
     # make_statistics(campaign_dir, results_dir, subfolder, services)
-    plot_runtime_core_graphs(results_dir, run_name, df, adf)
-    make_runtime_core_csv(results_dir, run_name, df)
+    plot_runtime_core_graphs(gp.results_dir, gp.run_name, df, adf)
+    make_runtime_core_csv(gp.results_dir, gp.run_name, df)
 
-    # not needed, the full runtime_core is generated elsewhere
+    # no longer needed, the full runtime_core is generated elsewhere and the models are no longer tested
     """
     if get_train_ml_models():
         make_runtime_core_csv_for_ml(results_dir, df, adf, "Interpolation")
         make_runtime_core_csv_for_ml(results_dir, df, adf, "Extrapolation")
     """
 
-    save_dataframes(results_dir, run_name, df, adf)
+    save_dataframes(gp.results_dir, gp.run_name, df, adf)
 
 
-def manage_campaign_dir():
+def manage_campaign_dir():  # todo update comment
     """
     if the campaign_dir already exists, and a "Results" folder is present, it exits,
     otherwise it finds the last run (i.e. "Run #11"), it deletes it (it may have failed) and resumes from there
@@ -89,24 +94,23 @@ def manage_campaign_dir():
             with index 0 has id "Run #1")
     """
 
-    if os.path.exists(current_deployment_dir) and os.path.isdir(current_deployment_dir):
-        folder_list = os.listdir(current_deployment_dir)
-        if "results" in folder_list:  # if there's a Result folder, the specific deployment has been completely tested
-            if os.path.exists(current_deployment_dir + "/results/done"):
-                show_warning("Run completed, skipping...")
+    if os.path.exists(gp.runs_dir):
+        if os.path.exists(gp.results_dir):  # if there's a Result folder, the specific deployment has been completely tested
+            if os.path.exists(gp.results_dir + "done"):
+                show_warning("Run completed, skipping...\n")
                 return -1
-            else:
-                delete_directory(current_deployment_dir + "/results")
+            else:  # testing is completed but results are not
+                delete_directory(gp.results_dir)
                 final_processing()
                 return -1
 
-        show_warning("Folder exists, resuming...")
-        folder_list = os.listdir(run_dir)
+        show_warning("Resuming...\n")
+        folder_list = os.listdir(gp.runs_dir)
 
-        if folder_list:
+        if folder_list:  # if not empty
             n = len(folder_list) - 1
 
-            last_run = run_dir + "/" + runs[n]["id"]
+            last_run = gp.runs_dir + "/" + runs[n]["id"]
             # print(last_run)
             if os.path.exists(last_run + "/done"):
                 n += 1
@@ -117,51 +121,50 @@ def manage_campaign_dir():
 
     else:
         n = 0
-        os.mkdir(current_deployment_dir)
-        os.mkdir(run_dir)
+        os.mkdir(gp.runs_dir)
 
-    os.system("cp input.yaml '" + current_deployment_dir + "/input.yaml'")
+    os.system("cp input.yaml '" + gp.current_deployment_dir + "input.yaml'")
 
     return n
 
 
-def main(clean_buckets=False):
-    global clusters, runs, simple_services, run_name, current_deployment_dir, run_dir, repetitions
+def main():
+    # if clean_buckets is true then I'm testing the full workflow
+    global clusters, runs, simple_services, repetitions, current_run_dir
     clusters = get_clusters_info()
     base, runs = run_scheduler()
     simple_services = get_simple_services(runs[0]["services"])
-    campaign_dir, run_name, repetitions, cooldown = get_run_info()
-
-    # campaign_dir = work_dir + campaign_dir
-    # auto_mkdir('/'.join(campaign_dir.split("/")[:-1]))  # sneaky cheaty but my brain hurts so I'm excused
-    # auto_mkdir(campaign_dir)
-    current_deployment_dir = campaign_dir + "/" + run_name
-    run_dir = current_deployment_dir + "/runs"
+    repetitions, cooldown, stop_at_run = get_run_info()
+    current_run_index = stop_at_run - 1
 
     s = manage_campaign_dir()
     if s == -1:
         return
 
     show_workflow(simple_services)
-    show_runs(base, repetitions, clusters, current_deployment_dir)
+    show_runs(base, repetitions, clusters)
 
-    # run = runs[0]
-    # test()
-
-    for i in range(s, len(runs)):
+    for i in range(s, stop_at_run * repetitions):
         global run
         run = runs[i]
+
         print(colored("\nStarting " + run["id"] + " of " + str(len(runs)), "blue"))
-        os.mkdir(os.path.join(run_dir, run["id"]))  # creates the working directory
+        current_run_dir = os.path.join(gp.runs_dir, run["id"])
+        auto_mkdir(current_run_dir)
         simple_services = get_simple_services(run["services"])
 
-        prepare_clusters(clean_buckets)
-        start_run_full()
-        end_run_full()
-        # test_single_services()
+        # if not clean_buckets and len(run["services"]) == 1 and run["services"][0]["cluster"] == "AWS Lambda":
+        if gp.is_single_service_test and gp.has_active_lambdas:
+            test_single_lambda()
+        else:
+            prepare_clusters()
+            start_run_full()
 
-    if get_do_final_processing():
+        end_run_full(current_run_index)
+
+    if gp.is_last_run:
         final_processing()
+
     return
 
 
