@@ -8,6 +8,7 @@ from ..design import run_design
 def aisprint_cli():
     pass
 
+
 @click.command()
 @click.option("--application_name", help="Name of the new AI-SPRINT application.", type=str, required=False)
 def new_application(application_name):
@@ -21,17 +22,19 @@ def new_application(application_name):
     else: 
         print("DONE. New AI-SPRINT application has been created.")
 
+
 @click.command()
 @click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
 def design(application_dir):
     run_design(application_dir)
     print("DONE. Application designs have been generated.") 
 
+
 @click.command()
 @click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
 def profile(application_dir):
     print("Starting profiling...") 
-    from ..oscarpcoordinator.coordinator import main  # local import to save time, the ml library takes a while to import
+    from ..oscarp.coordinator import main  # local import to save time, amllibrary takes a while to import
     main(application_dir)
 
 
@@ -39,13 +42,15 @@ def profile(application_dir):
 @click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
 def space4aid(application_dir):
     print("Starting SPACE4AI-D...")
-    from ..space4aid.Run_and_Evaluate_integrate_AISPRINT import main  # local import to save time, the ml library takes a while to import
+    from ..space4aid.Run_and_Evaluate_integrate_AISPRINT import main  # local import to save time, amllibrary takes a while to import
     main(application_dir)
+
 
 aisprint_cli.add_command(design)
 aisprint_cli.add_command(new_application)
 aisprint_cli.add_command(profile)
 aisprint_cli.add_command(space4aid)
+
 
 if __name__ == '__main__':
     aisprint_cli()

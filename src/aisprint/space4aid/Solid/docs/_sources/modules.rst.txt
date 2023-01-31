@@ -1,7 +1,0 @@
-Solid
-=====
-
-.. toctree::
-   :maxdepth: 4
-
-   Solid

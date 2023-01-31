@@ -14,9 +14,12 @@ RUN pip install --no-cache-dir -r requirements-space4ai.txt
 # NOTE: once the repo will be public it will be installed directly from gitlab
 # RUN pip install git+https://gitlab.polimi.it/ai-sprint/ai-sprint-design.git
 
+# RUN git clone https://gitlab.polimi.it/ai-sprint/OSCAR-P.git src/aisprint/oscarp
+RUN git clone https://gitlab.polimi.it/ai-sprint/space4ai-d.git src/aisprint/space4aid
+
 COPY . /ai-sprint-design
 RUN cd /ai-sprint-design && python3 -m pip install .
-COPY ./src/aisprint/oscarpcoordinator/oscarp/executables /bin/oscarp_executables
+COPY ./src/aisprint/oscarp/oscarp/executables /bin/oscarp_executables
 RUN rm -r /ai-sprint-design
 
 RUN git clone https://gitlab.polimi.it/ai-sprint/toscarizer.git && \
