@@ -34,7 +34,7 @@ def design(application_dir):
 @click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
 def profile(application_dir):
     print("Starting profiling...") 
-    from ..oscarp.coordinator import main  # local import to save time, amllibrary takes a while to import
+    from ..oscarpcoordinator.coordinator import main  # local import to save time, amllibrary takes a while to import
     main(application_dir)
 
 
