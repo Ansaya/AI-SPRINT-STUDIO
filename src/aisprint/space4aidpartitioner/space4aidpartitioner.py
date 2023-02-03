@@ -27,13 +27,17 @@ class SPACE4AIDPartitioner():
             self.application_dir, 'aisprint', 'designs', partitionable_model, 'base')
         self.onnx_file = os.path.join(self.partitionable_model_dir, 'onnx', onnx_file)
     
-    def get_partitions(self):
+    def get_partitions(self, num_partitions=1):
         # Load the Onnx Model
-        print("- Finding partitions of model: {}".format(self.partitionable_model))
+        print("\n")
+        print("[AI-SPRINT]: " + "Running SPACE4AI-D-partitioner..")
+        print("             " + "Maximum number of required partitions: {}".format(num_partitions))
+        print("             " + "- Finding partitions of model: {}".format(self.partitionable_model))
         onnx_model = load_onnx_model(self.onnx_file)
         sorted_nodes = self._get_sorted_nodes(onnx_model=onnx_model)
 
-        return self.onnx_model_split_first_smallest(sorted_nodes, onnx_model=onnx_model)
+        return self.onnx_model_split_first_smallest(
+            sorted_nodes, onnx_model=onnx_model, number_of_partitions=num_partitions)
 
     def _get_node_type(self, onnx_model, node_name):
         for node in onnx_model.graph.node:
@@ -194,8 +198,9 @@ class SPACE4AIDPartitioner():
 
             if ln == number_of_partitions:
                 break
-                
-        print("Model partitioned at layers: {}\n".format(partitioned_layers))
+        
+        print("\n")        
+        print("             " + "  Done! Model partitioned at layers: {}\n".format(partitioned_layers))
         return found_partitions
         # ------------------------------------------------------
         

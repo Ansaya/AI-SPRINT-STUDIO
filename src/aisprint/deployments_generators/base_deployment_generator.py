@@ -19,6 +19,9 @@ class BaseDeploymentGenerator(DeploymentGenerator):
                 - dag: application dag of the current deployment 
         '''
         super().create_deployment(deployment_name, dag_filename)
+    
+        print("\n")
+        print("[AI-SPRINT]: " + "Starting creating base application deployment..")
 
         # Copy original DAG
         shutil.copyfile(os.path.join(self.application_dir, 'common_config', 'application_dag.yaml'),
@@ -41,8 +44,7 @@ class BaseDeploymentGenerator(DeploymentGenerator):
         # Create 'src' with symbolic links to base designs
         os.makedirs(os.path.join(self.deployment_dir, 'src'))
 
-        designs_dir = os.path.join(
-            os.path.abspath(self.application_dir), 'aisprint', 'designs')
+        designs_dir = '../../../designs'
         for component_name in self.dag_dict['System']['components']:
             source_design = os.path.join(designs_dir, component_name, 'base')
             symlink = os.path.join(
@@ -151,5 +153,6 @@ class BaseDeploymentGenerator(DeploymentGenerator):
         current_design_symlink = os.path.join(
             os.path.abspath(self.application_dir), 'aisprint', 'deployments', 'optimal_deployment')
         os.symlink(source_deployment, current_design_symlink)
-        print("Current deployment is '{}'.\n".format(deployment_name))
+        print("[AI-SPRINT]: " + "Starting creating base application deployment..")
+        print("             " + "Done! Current optimal deployment is '{}'".format(deployment_name))
     

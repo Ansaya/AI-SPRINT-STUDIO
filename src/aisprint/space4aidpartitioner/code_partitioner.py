@@ -21,6 +21,16 @@ class CodePartitioner():
         self.application_dir = application_dir
         self.designs_dir = os.path.join(
             self.application_dir, 'aisprint', 'designs')
+        self.partitionable_components = self.get_partitionable_components()
+    
+    def get_partitionable_components(self):
+        components = []
+        with open(os.path.join(self.application_dir, 'common_config', 'annotations.yaml'), 'r') as f:
+            annotations = yaml.load(f, yaml.FullLoader)    
+        for _, item in annotations.items():
+            if 'partitionable_model' in item:
+                components.append(item['component_name']['name'])
+        return components
     
     def generate_code_partitions(self):
         
@@ -29,6 +39,9 @@ class CodePartitioner():
 
         for component_dir in component_dirs:
             component_name = os.path.normpath(component_dir)
+
+            if component_name not in self.partitionable_components:
+                continue
             
             # Get list of partitions
             partition_dirs = next(os.walk(
@@ -39,7 +52,8 @@ class CodePartitioner():
             if partition_dirs == []:
                 continue
             
-            print("- Generating code for component: {}..".format(component_name), end=' ')
+            print("\n")
+            print("             " + "- Generating code for the component: {}".format(component_name))
         
             # Check component has exec_time
             with open(os.path.join(self.application_dir, 'common_config', 'annotations.yaml'), 'r') as f:
@@ -54,14 +68,12 @@ class CodePartitioner():
             
             # 1st half
             first_half = [p for p in partition_dirs if re.search("^partition[1-9]+_1", p)]
-            print(first_half)
             self._generate_first_half_code(
                 component_name=component_name, first_half=first_half, 
                 has_exec_time=has_exec_time, orig_onnx_file=orig_onnx_file)
             
             # 2nd half
             second_half = [p for p in partition_dirs if re.search("^partition[1-9]+_2", p)]
-            print(second_half)
             self._generate_second_half_code(
                 component_name=component_name, second_half=second_half, has_exec_time=has_exec_time)
 
@@ -80,7 +92,7 @@ class CodePartitioner():
                         shutil.copyfile(
                             os.path.join(base_dir, file), 
                             os.path.join(self.designs_dir, component_name, h, file))
-            print("DONE.\n")
+            print("             " + "  Done! Code generated for segments:", first_half + second_half)
         
     def _generate_first_half_code(self, component_name, first_half, 
                                   has_exec_time, orig_onnx_file):
@@ -114,7 +126,8 @@ class CodePartitioner():
                 spaces_str += " "
             elif inference_str_res[i] == "\t":
                 spaces_str += "\t"
-        new_inference_str = spaces_str + "result_dict, _ =" + inference_cmd + "\n"
+        dict_res, out_res = inference_str_res.replace(" ", "").split(',')
+        new_inference_str = inference_str 
         
         # Get __name__ line
         name_row = [l for l in main_code if ("__name__=='__main__'" in l.replace(" ", "") and 'import' not in l)]
@@ -126,8 +139,7 @@ class CodePartitioner():
         save_str += "with open(args['output'], 'wb') as f:\n"
         save_str += spaces_str
         save_str += "    "
-        save_str += "pickle.dump(result_dict, f)\n\n"
-
+        save_str += "pickle.dump(" + dict_res + ", f)\n\n"
 
         # Start generating new script
         
@@ -185,7 +197,8 @@ class CodePartitioner():
                 spaces_str += " "
             elif inference_str_res[i] == "\t":
                 spaces_str += "\t"
-        new_inference_str = spaces_str + "return_dict, result =" + inference_cmd + "\n"
+        dict_res, out_res = inference_str_res.replace(" ", "").split(',')
+        new_inference_str = spaces_str + dict_res + ", " + out_res + " =" + " load_and_inference(args['onnx_file'], input_dict)\n"
 
         # Get main script line
         main_row = [l for l in main_code if ('def main(' in l and 'import' not in l)]

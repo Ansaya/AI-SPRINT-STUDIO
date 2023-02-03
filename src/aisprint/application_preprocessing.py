@@ -25,7 +25,8 @@ class ApplicationPreprocessor():
 
         # Create base design
         # ---------------------
-        print("- Creating base designs..\n")
+        print("\n")
+        print("[AI-SPRINT]: " + "Starting creating base components' designs..")
         designs_dir = os.path.join(self.application_dir, 'aisprint', 'designs') 
         # For each component create a 'base' design
         for component_name in dag_dict['System']['components']:
@@ -36,9 +37,11 @@ class ApplicationPreprocessor():
 
             # Copy code from the original folder to the 'component_name' design
             shutil.copytree(component_folder, destination_dir)
+        print("[AI-SPRINT]: " + "Done! Base designs created.")
 
         # Initialize the component_partitions.yaml in aisprint/designs
-        print("Initializing component_partitions.yaml..", end=' ')
+        print("\n")
+        print("[AI-SPRINT]: " + "Preparing for SPACE4AI-D-partitioner..")
         component_partitions = {'components': {}}
         for component_name in dag_dict['System']['components']:
             component_partitions['components'][component_name] = {}
@@ -46,5 +49,5 @@ class ApplicationPreprocessor():
         designs_dir = os.path.join(self.application_dir, 'aisprint', 'designs')
         with open(os.path.join(designs_dir, 'component_partitions.yaml'), 'w') as f:
             yaml.dump(component_partitions, f)
-        print("DONE.\n")
+        print("[AI-SPRINT]: " + "Done! 'components_partitions.yaml' file initialized with base designs.")
         # ---------------------

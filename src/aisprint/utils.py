@@ -127,3 +127,14 @@ def run_annotation_manager(annotation_manager, deployment_name):
             continue
         annotation_manager = annotation_managers[aisprint_annotation]
         annotation_manager.generate_configuration_files(deployment_name)
+
+def print_header():
+    print('             _____      _____ _____  _____  _____ _   _ _______   _____            _             ')
+    print('       /\   |_   _|    / ____|  __ \|  __ \|_   _| \ | |__   __| |  __ \          (_)            ')
+    print('      /  \    | |_____| (___ | |__) | |__) | | | |  \| |  | |    | |  | | ___  ___ _  __ _ _ __  ')
+    print('     / /\ \   | |______\___ \|  ___/|  _  /  | | | . ` |  | |    | |  | |/ _ \/ __| |/ _` | \'_ \ ')
+    print('    / ____ \ _| |_     ____) | |    | | \ \ _| |_| |\  |  | |    | |__| |  __/\__ \ | (_| | | | |')
+    print('   /_/    \_\_____|   |_____/|_|    |_|  \_\_____|_| \_|  |_|    |_____/ \___||___/_|\__, |_| |_|')
+    print('                                                                                      __/ |      ')
+    print('                                                                                     |___/       ')
+    print('                                                                                                 ')

@@ -44,7 +44,8 @@ def store_aisprint_annotations(application_dir):
 
     # Parse annotations
     # --------------------
-    print("Parsing AI-SPRINT annotations..")
+    print("\n")
+    print("[AI-SPRINT]: " + "Parsing AI-SPRINT annotations..")
     src_dir = os.path.join(application_dir , 'src')
 
     # Parse
@@ -65,7 +66,7 @@ def store_aisprint_annotations(application_dir):
     # Save annotations
     with open(os.path.join(application_dir, 'common_config', 'annotations.yaml'), 'w') as f:
         yaml.dump(annotations_dict, f)
-    print("* Annotations stored in {}\n".format(
+    print("[AI-SPRINT]: " + "Done! Annotations parsed and stored in: {}".format(
         os.path.join(application_dir, 'common_config', 'annotations.yaml')))
 
     return annotations_dict
@@ -81,7 +82,8 @@ def validate_aisprint_annotations(application_dir):
     dag_file = os.path.join(application_dir, 'common_config', 'application_dag.yaml')
     
     # Validate annotations
-    print("Validating AI-SPRINT annotations.. ", end=' ')
+    print("\n")
+    print("[AI-SPRINT]: " + "Validating AI-SPRINT annotations..")
     for aisprint_annotation in AISPRINT_ANNOTATIONS:
         if aisprint_annotation == 'annotation':
             continue
@@ -90,7 +92,7 @@ def validate_aisprint_annotations(application_dir):
         validator_class = getattr(annotation_validators, validator_class_name)
         annotation_validator = validator_class(annotations_dict, dag_file)
         annotation_validator.check_annotation_validity()
-    print("DONE.\n")
+    print("[AI-SPRINT]: " + "Done!")
     # -------------------
 
 def run_aisprint_parser(application_dir):

@@ -5,7 +5,7 @@ import argparse
 from aisprint.application_preprocessing import ApplicationPreprocessor
 from aisprint.deployments_generators import BaseDeploymentGenerator
 
-from .utils import parse_dag, get_annotation_manager
+from .utils import parse_dag, get_annotation_manager, print_header
 from .annotations_parsing import run_aisprint_parser
 
 def run_design(application_dir):
@@ -18,27 +18,31 @@ def run_design(application_dir):
         4. Create AI-SPRINT possible deployments 
     """
 
+    # print("\n")
+    # print("# --------- #")
+    # print("# AI-SPRINT #")
+    # print("# --------- #")
+    # print("# --------- #")
+    # print("#   Design  #")
+    # print("# --------- #")
+    # print("\n")
+    print_header()
+
     print("\n")
-    print("# --------- #")
-    print("# AI-SPRINT #")
-    print("# --------- #")
-    print("# --------- #")
-    print("#   Design  #")
-    print("# --------- #")
-    print("\n")
+    print("[AI-SPRINT]: " + "Starting the design of the AI-SPRINT application: {}".format(
+        os.path.basename(os.path.normpath(application_dir))))
 
     # 1) Read DAG file
     # ----------------
     # DAG filename: 'application_dag.yaml' 
     dag_file = os.path.join(application_dir, 'common_config', 'application_dag.yaml')
-    
-    print("Parsing application DAG in '{}'..".format(dag_file))
     dag_dict, num_components = parse_dag(dag_file)
-
-    print("* Found {} components in the DAG with the following dependencies:\n".format(num_components))
+    
+    print("\n")
+    print("[AI-SPRINT]: " + "Found {} components in the DAG with the following dependencies:".format(num_components))
     for component, next_component in dag_dict.items():
-        print("* {} -> {}".format(component, next_component))
-    print("")
+        if next_component['next'] != []:
+            print("             " + "- {} -> {}".format(component, next_component['next']))
     
     # Get the directories of the components
     components_dirs = next(os.walk(os.path.join(application_dir, 'src')))[1]
@@ -86,11 +90,12 @@ def run_design(application_dir):
         application_dir, 'aisprint', 'deployments', 'optimal_deployment')
     optimal_deployment_name = os.path.basename(
         os.path.normpath(os.readlink(optimal_deployment_symlink)))
-    print("Generating QoS constraints for the optimal deployment..", end=' ')
+    print("\n")
+    print("[AI-SPRINT]: " + "Generating QoS constraints for the base deployment..")
     input_args = {'deployment_name': optimal_deployment_name}
     annotation_manager.process_annotations(input_args)
 
-    print("DONE.\n")
+    print("             " + "Done! QoS constraints generated.\n")
     # -------------------------------------------------
 
 if __name__ == '__main__':

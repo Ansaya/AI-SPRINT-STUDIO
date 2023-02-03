@@ -10,16 +10,7 @@ def load_and_inference(onnx_file, input_dict):
     input_all = [node.name for node in onnx_model.graph.input]
     input_initializer =  [node.name for node in onnx_model.graph.initializer]
     net_feed_input = list(set(input_all)  - set(input_initializer))
-    # print('Inputs: ', net_feed_input)
-    model_num_inputs = len(net_feed_input)
 
-    # # Single Input ONNX File --> string
-    if model_num_inputs == 1:
-        model_input = net_feed_input[0]
-    # Multi-Input ONNX File --> list of string
-    else:
-        model_input = net_feed_input
-    
     so = ort.SessionOptions()
     ort_session = ort.InferenceSession(onnx_file, so, providers=['CPUExecutionProvider'])
 

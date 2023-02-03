@@ -23,11 +23,17 @@ class PartitionableModelManager(AnnotationManager):
 
         # SPACE4AI-D-partitioner
         # ----------------------
-        print("Running SPACE4AI-D-partitioner...")
+        print("\n")
+        print("[AI-SPRINT]: " + "Running SPACE4AI-D-partitioner..")
         for _, component_arguments in self.annotations.items():
             if 'partitionable_model' in component_arguments:
                 onnx_file = component_arguments['partitionable_model']['onnx_file'] 
                 component_name = component_arguments['component_name']['name']
+
+                try:
+                    num_partitions = component_arguments['partitionable_model']['num_partitions']
+                except:
+                    num_partitions = 1
 
                 partitioner = SPACE4AIDPartitioner(
                     self.application_dir, component_name, onnx_file)
@@ -50,7 +56,8 @@ class PartitionableModelManager(AnnotationManager):
 
         # Code partitioner
         # ----------------
-        print("Generating code of the partitions..")
+        print("\n")
+        print("[AI-SPRINT]: " + "Automatic generating the code of the found partitions..")
         code_partitioner = CodePartitioner(application_dir=self.application_dir)
         code_partitioner.generate_code_partitions()
         # ----------------
