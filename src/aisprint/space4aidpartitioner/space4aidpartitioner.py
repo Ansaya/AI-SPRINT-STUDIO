@@ -5,7 +5,10 @@ from tqdm import tqdm
 
 import numpy as np
 
+from typing import List
+
 import onnx
+from onnx.utils import Extractor
 from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
 from skl2onnx.helpers.onnx_helper import load_onnx_model
 
@@ -120,6 +123,38 @@ class SPACE4AIDPartitioner():
 
         return input_names
 
+    def extract_model(
+        self,
+        model,
+        output_path: str,
+        input_names: List[str],
+        output_names: List[str],
+        check_model: bool = True,
+    ) -> None:
+        """Extracts sub-model from an ONNX model.
+        The sub-model is defined by the names of the input and output tensors *exactly*.
+        Note: For control-flow operators, e.g. If and Loop, the _boundary of sub-model_,
+        which is defined by the input and output tensors, should not _cut through_ the
+        subgraph that is connected to the _main graph_ as attributes of these operators.
+        Arguments:
+            input_path (string): The path to original ONNX model.
+            output_path (string): The path to save the extracted ONNX model.
+            input_names (list of string): The names of the input tensors that to be extracted.
+            output_names (list of string): The names of the output tensors that to be extracted.
+            check_model (bool): Whether to run model checker on the extracted model.
+        """
+        if not output_path:
+            raise ValueError("Output model path shall not be empty!")
+        if not output_names:
+            raise ValueError("Output tensor names shall not be empty!")
+
+        e = Extractor(model)
+        extracted = e.extract_model(input_names, output_names)
+
+        onnx.save(extracted, output_path)
+        if check_model:
+            onnx.checker.check_model(output_path)
+
     def onnx_model_split_first_smallest(self, sorted_nodes, onnx_model=None, number_of_partitions=1):
         ''' Find all the possible partitions of the ONNX model, 
             which are stored as designs in the designs folder of the AI-SPRINT application.
@@ -130,6 +165,9 @@ class SPACE4AIDPartitioner():
         
         if onnx_model is None:
             # Load the Onnx Model
+            if not os.path.exists(self.onnx_file):
+                raise ValueError(f"Invalid input model path: {self.onnx_file}")
+            onnx.checker.check_model(self.onnx_file)
             onnx_model = load_onnx_model(self.onnx_file)
 
         found_partitions = []
@@ -162,8 +200,8 @@ class SPACE4AIDPartitioner():
                 output_names.append(onnx_model.graph.output[i].name)
 
             try:
-                onnx.utils.extract_model(
-                    self.onnx_file, 
+                self.extract_model(
+                    onnx_model,
                     os.path.join(onnx_folder, which_partition+'_2.onnx'), 
                     input_names, output_names)
                 found_partitions.append(which_partition+'_2')
@@ -185,9 +223,9 @@ class SPACE4AIDPartitioner():
             if not os.path.exists(onnx_folder):
                 os.makedirs(onnx_folder)
 
-            onnx.utils.extract_model(self.onnx_file, 
-                                     os.path.join(onnx_folder, which_partition+'_1.onnx'), 
-                                     input_names, output_names)
+            self.extract_model(onnx_model, 
+                               os.path.join(onnx_folder, which_partition+'_1.onnx'), 
+                               input_names, output_names)
 
             found_partitions.append(which_partition+'_1')
 
