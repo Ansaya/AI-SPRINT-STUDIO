@@ -126,7 +126,7 @@ class CodePartitioner():
                 spaces_str += " "
             elif inference_str_res[i] == "\t":
                 spaces_str += "\t"
-        dict_res, out_res = inference_str_res.replace(" ", "").split(',')
+        dict_res, out_res = inference_str_res.replace(" ", "").replace("\t", "").split(',')
         new_inference_str = inference_str 
         
         # Get __name__ line
@@ -138,7 +138,10 @@ class CodePartitioner():
         save_str += spaces_str
         save_str += "with open(args['output'], 'wb') as f:\n"
         save_str += spaces_str
-        save_str += "    "
+        if "\t" in spaces_str:
+            save_str += "\t"
+        else:
+            save_str += "    "
         save_str += "pickle.dump(" + dict_res + ", f)\n\n"
 
         # Start generating new script
@@ -197,7 +200,7 @@ class CodePartitioner():
                 spaces_str += " "
             elif inference_str_res[i] == "\t":
                 spaces_str += "\t"
-        dict_res, out_res = inference_str_res.replace(" ", "").split(',')
+        dict_res, out_res = inference_str_res.replace(" ", "").replace("\t", "").split(',')
         new_inference_str = spaces_str + dict_res + ", " + out_res + " =" + " load_and_inference(args['onnx_file'], input_dict)\n"
 
         # Get main script line
@@ -213,7 +216,10 @@ class CodePartitioner():
         load_str += spaces_str
         load_str += "with open(args['input'], 'rb') as f:\n"
         load_str += spaces_str
-        load_str += "    "
+        if "\t" in spaces_str:
+            load_str += "\t"
+        else:
+            load_str += "    "
         load_str += "input_dict = pickle.load(f)\n"
 
         # Start generating new script
@@ -230,17 +236,17 @@ class CodePartitioner():
         # Add new if __name__ == '__main__'
         gen_script += ["\n"]
         gen_script += ["if __name__ == '__main__':\n"]
-        gen_script += ["    " + "parser = argparse.ArgumentParser()\n"]
-        gen_script += ["    " + "parser.add_argument('-i', '--input', required=True, help='path to input file')\n"]
-        gen_script += ["    " + "parser.add_argument('-o', '--output', help='path to output directory')\n"]
-        gen_script += ["    " + "args = vars(parser.parse_args())\n"]
-        gen_script += ["    " + "input_filename = args['input'].split('/')[-1]\n"]
-        gen_script += ["    " + "args['output'] = os.path.join(os.path.dirname(args['output']), input_filename)\n"]
-        gen_script += ["    " + "main(args)"]
+        gen_script += [spaces_str + "parser = argparse.ArgumentParser()\n"]
+        gen_script += [spaces_str + "parser.add_argument('-i', '--input', required=True, help='path to input file')\n"]
+        gen_script += [spaces_str + "parser.add_argument('-o', '--output', help='path to output directory')\n"]
+        gen_script += [spaces_str + "args = vars(parser.parse_args())\n"]
+        gen_script += [spaces_str + "input_filename = args['input'].split('/')[-1]\n"]
+        gen_script += [spaces_str + "args['output'] = os.path.join(os.path.dirname(args['output']), input_filename)\n"]
+        gen_script += [spaces_str + "main(args)"]
         
         for sh in second_half:
             partition_dir = os.path.join(self.designs_dir, component_name, sh)
-            new_onnx_line = ["    " + "parser.add_argument('-y', '--onnx_file', default='onnx/{}.onnx', help='complete path to tge ONNX model')\n".format(sh)]
+            new_onnx_line = [spaces_str + "parser.add_argument('-y', '--onnx_file', default='onnx/{}.onnx', help='complete path to tge ONNX model')\n".format(sh)]
             new_gen_script = gen_script[:-4] + new_onnx_line + gen_script[-4:]
             with open(os.path.join(partition_dir, 'main.py'), 'w') as f:
                 f.writelines(new_gen_script)
