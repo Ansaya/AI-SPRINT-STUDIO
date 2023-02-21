@@ -8,8 +8,8 @@ class PartitionableModelValidator(AnnotationValidator):
             raise RuntimeError("'onnx_file' argument required in 'partitionable_model' annotation. ")
         # Check number of arguments
         num_arguments = len(list(arguments.keys()))
-        if len(list(arguments.keys())) > 1:
-            raise RuntimeError("Annotation 'partitionable_model' takes exactly 1 arguments ({}).".format(num_arguments))
+        if len(list(arguments.keys())) > 2:
+            raise RuntimeError("Annotation 'partitionable_model' takes maximum 2 arguments ({}).".format(num_arguments))
         # Check 'onnx_file' is a string
         if not isinstance(arguments['onnx_file'], str):
             raise TypeError("'onnx_file' argument must be a string.")

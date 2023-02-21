@@ -37,7 +37,7 @@ class PartitionableModelManager(AnnotationManager):
 
                 partitioner = SPACE4AIDPartitioner(
                     self.application_dir, component_name, onnx_file)
-                found_partitions = partitioner.get_partitions()
+                found_partitions = partitioner.get_partitions(num_partitions=num_partitions)
 
                 found_partitions = ['base'] + found_partitions
 
