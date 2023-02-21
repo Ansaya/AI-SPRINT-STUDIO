@@ -95,7 +95,7 @@ class BaseDeploymentGenerator(DeploymentGenerator):
             temp_dict[component_name]['Containers'] = {'container1': {}}
             for k, v in container1.items():
                 if k == 'candidateExecutionResources':
-                    k = 'selectedExecutionResources'
+                    k = 'selectedExecutionResource'
                     v = v[0]
                     selected_resources.append(v)
                 temp_dict[component_name][
