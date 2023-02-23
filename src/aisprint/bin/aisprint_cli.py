@@ -35,10 +35,11 @@ def design(application_dir):
 
 @click.command()
 @click.option("--application_dir", help="Path to the AI-SPRINT application.", required=True)
-def profile(application_dir):
+@click.option("--dry_run", "-d", help="Executes a dry run.", is_flag=True, required=False)
+def profile(application_dir, dry_run):
     print("Starting profiling...") 
     from ..oscarpcoordinator.coordinator import main  # local import to save time, amllibrary takes a while to import
-    main(application_dir)
+    main(application_dir, dry_run)
 
 
 @click.command()

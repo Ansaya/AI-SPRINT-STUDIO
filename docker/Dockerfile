@@ -25,14 +25,10 @@ RUN pip install --no-cache-dir -r requirements-space4ai.txt
 
 COPY . /ai-sprint-design
 
-RUN git clone https://gitlab.polimi.it/ai-sprint/OSCAR-P.git oscarpcoordinator && \
-    cp -r oscarpcoordinator/oscarp/executables /bin/oscarp_executables && \
-    cp -r oscarpcoordinator /ai-sprint-design/src/aisprint/oscarpcoordinator && \
-    rm -rf oscarpcoordinator
+RUN git clone https://gitlab.polimi.it/ai-sprint/OSCAR-P.git /ai-sprint-design/src/aisprint/oscarpcoordinator && \
+    cp -r /ai-sprint-design/src/aisprint/oscarpcoordinator/oscarp/executables /bin/oscarp_executables
 
-RUN git clone https://gitlab.polimi.it/ai-sprint/space4ai-d.git space4aid && \
-    cp -r space4aid /ai-sprint-design/src/aisprint/space4aid && \
-    rm -rf space4aid
+RUN git clone https://gitlab.polimi.it/ai-sprint/space4ai-d.git /ai-sprint-design/src/aisprint/space4aid
 
 RUN cd /ai-sprint-design && python3 -m pip install .
 RUN rm -r /ai-sprint-design
