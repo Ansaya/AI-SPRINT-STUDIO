@@ -3,7 +3,7 @@ import os
 import argparse 
 
 from aisprint.application_preprocessing import ApplicationPreprocessor
-from aisprint.deployments_generators import BaseDeploymentGenerator
+from aisprint.deployments_generators import DeploymentsGenerator
 
 from .utils import parse_dag, get_annotation_manager, print_header
 from .annotations_parsing import run_aisprint_parser
@@ -72,13 +72,11 @@ def run_design(application_dir):
         application_dir=application_dir, which_annotation='partitionable_model')
     annotation_manager.process_annotations()
     # ---------------------------------------------
-    
-    # 5) Create AI-SPRINT base deployment with BaseDeploymentGenerator
-    base_deployment_generator = BaseDeploymentGenerator(application_dir)
-    base_deployment_generator.create_deployment(deployment_name='base', 
-        dag_filename=os.path.join(application_dir, 'common_config', 'application_dag.yaml'))
-    # -------------------------------
 
+    # 5) Create all possible deployments (empty) with multi-cluster QoS constraints
+    deployments_generator = DeploymentsGenerator(application_dir)
+    num_generated_deployments = deployments_generator.create_deployments()
+    
     # 6) Run annotation managers for optimal deployment
     # (e.g., exec_time to generate the constraints)
     # -------------------------------------------------
@@ -91,9 +89,14 @@ def run_design(application_dir):
     optimal_deployment_name = os.path.basename(
         os.path.normpath(os.readlink(optimal_deployment_symlink)))
     print("\n")
-    print("[AI-SPRINT]: " + "Generating QoS constraints for the base deployment..")
+    print("[AI-SPRINT]: " + "Generating QoS constraints {} deployments..".format(num_generated_deployments))
     input_args = {'deployment_name': optimal_deployment_name}
     annotation_manager.process_annotations(input_args)
+
+    for num_deployment in range(num_generated_deployments):
+        deployment_name = 'deployment{}'.format(num_deployment+1)
+        input_args = {'deployment_name': deployment_name}
+        annotation_manager.process_annotations(input_args)
 
     print("             " + "Done! QoS constraints generated.\n")
     # -------------------------------------------------
