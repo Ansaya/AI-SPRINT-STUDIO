@@ -1,0 +1,6 @@
+[submodule "src/aisprint/oscarpcoordinator"]
+	path = src/aisprint/oscarpcoordinator
+	url = https://github.com/Ansaya/OSCAR-P.git
+[submodule "src/aisprint/space4aid"]
+	path = src/aisprint/space4aid
+	url = https://gitlab.polimi.it/ai-sprint/space4ai-d.git
