@@ -19,57 +19,64 @@ Currently implemented functionalities:
 ## Quick-Start
 ---
 
-### Step1: Install Requirements (Python 3.8.10):
+### Step 0: Clone the repository and update submodules:
 ```
-python3 -m pip install cookiecutter==2.1.1
+git clone https://github.com/Ansaya/AI-SPRINT-STUDIO.git ai-sprint-studio
+cd ai-sprint-studio
+git submodule update --init
 ```
 
-### Step2: Install AI-SPRINT 
+### Step 1: Install Requirements (Python 3.8.10):
 ```
-git clone https://gitlab.polimi.it/ai-sprint/ai-sprint-design.git
-cd ai-sprint-design
+python3 -m pip install -r docker/requirements.txt
+python3 -m pip install -r docker/requirements-oscarp.txt
+python3 -m pip install -r docker/requirements-space4ai.txt
+```
+
+### Step 2: Install AI-SPRINT 
+```
 python3 -m pip install . 
 ```
 
-### Step3: Try --help 
+### Step 3: Try --help 
 ```
 aisprint --help
 ```
 
-## Example1: Create new application
+## Example 1: Create new application
 ```
 aisprint new-application --application_name NAME
 ```
 
-## Example2: Parse annotations and create designs 
+## Example 2: Parse annotations and create designs 
 ### example application in 'examples'
 ```
 aisprint design --application_dir ./NAME
 ```
 ## Docker
 ---
-### Step1: Build the Docker image
+### Step 1: Build the Docker image
 ```
-git clone https://gitlab.polimi.it/ai-sprint/ai-sprint-design.git
-cd ai-sprint-design
+git clone https://github.com/Ansaya/AI-SPRINT-STUDIO.git ai-sprint-studio
+cd ai-sprint-studio
 docker build -t registry.gitlab.polimi.it/ai-sprint/ai-sprint-design -f docker/Dockerfile .
 ```
-### (Step1b): Push the Docker image to the container registry
+### (Step 1b): Push the Docker image to the container registry
 ```
 docker push registry.gitlab.polimi.it/ai-sprint/ai-sprint-design
 ```
 
-### Step2: Try design --help
+### Step 2: Try design --help
 ```
 docker run registry.gitlab.polimi.it/ai-sprint/ai-sprint-design aisprint --help
 ```
 
-### Example1: Create new application
+### Example 1: Create new application
 ```
 docker run registry.gitlab.polimi.it/ai-sprint/ai-sprint-design aisprint new-application --application_name NAME 
 ```
-```
-### Example2: Parse annotations and create designs 
+
+### Example 2: Parse annotations and create designs 
 ```
 docker run -v /PATH/TO/APPLICATION_DIR/:/NAME registry.gitlab.polimi.it/ai-sprint/ai-sprint-design aisprint design --application_dir NAME
 ```
